@@ -1,0 +1,47 @@
+option java_package = "my.adam.smo";
+option java_outer_classname = "POC";
+option java_generic_services = true;
+option optimize_for = SPEED;
+
+message hello {
+    required string messag = 1;
+}
+
+message awsomeAnswer {
+    required string answer = 1;
+}
+
+message In {
+    required int32 operand1 = 1;
+    required int32 operand2 = 2;
+}
+
+message Out {
+    required int32 result = 1;
+}
+
+service SearchService {
+    rpc Search (hello) returns (hello);
+}
+
+service AwsomeSearch {
+    rpc Search (hello) returns (awsomeAnswer);
+}
+
+service NewUsefullService {
+    rpc DoGoodJob (In) returns (Out);
+}
+
+//call transport layer
+message Request {
+    optional int64 requestId = 1;
+    optional string serviceName = 2;
+    optional string methodName = 3;
+    optional bytes methodArgument = 4;
+}
+
+message Response {
+    optional int64 requestId = 1;
+    optional bytes response = 2;
+    optional string exception = 3;
+}
