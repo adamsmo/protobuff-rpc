@@ -3,6 +3,7 @@ package my.adam.smo.server;
 import com.google.protobuf.*;
 import my.adam.smo.DummyRpcController;
 import my.adam.smo.POC;
+import my.adam.smo.common.Log;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
@@ -11,12 +12,10 @@ import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The MIT License
@@ -41,13 +40,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 public class Server {
     private final ServerBootstrap bootstrap;
     private static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
 
-    private final AtomicInteger seqNum = new AtomicInteger(0);
-
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    @Log
+    Logger logger;
 
     private ConcurrentHashMap<String, Service> serviceMap = new ConcurrentHashMap<String, Service>();
 
@@ -110,7 +109,11 @@ public class Server {
     }
 
     public void start(SocketAddress sa) {
-        bootstrap.bind(sa);
+        try {
+            bootstrap.bind(sa);
+        } catch (ChannelException e) {
+            logger.error("error while starting server ", e);
+        }
     }
 
     public void stop() {

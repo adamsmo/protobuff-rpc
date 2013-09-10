@@ -5,6 +5,8 @@ import com.google.protobuf.RpcChannel;
 import my.adam.smo.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.net.InetSocketAddress;
 
@@ -36,7 +38,10 @@ public class ClientTest {
     private static Logger logger = LoggerFactory.getLogger(ClientTest.class);
 
     public static void main(String[] args) {
-        Client c = new Client(40);
+
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("Context.xml");
+        Client c = (Client) applicationContext.getBean("my_client");
+
         RpcChannel rpcc = c.connect(new InetSocketAddress("localhost", 8080));
 
         POC.SearchService searchService = POC.SearchService.newStub(rpcc);
@@ -61,10 +66,10 @@ public class ClientTest {
                         }
                     });
 
-            usefullService.doGoodJob(new DummyRpcController(), POC.In.newBuilder().setOperand1(15).setOperand2(29).build(),new RpcCallback<POC.Out>() {
+            usefullService.doGoodJob(new DummyRpcController(), POC.In.newBuilder().setOperand1(15).setOperand2(29).build(), new RpcCallback<POC.Out>() {
                 @Override
                 public void run(POC.Out parameter) {
-                    logger.debug(""+parameter.getResult());
+                    logger.debug("" + parameter.getResult());
                 }
             });
 

@@ -9,8 +9,6 @@ import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,10 +45,10 @@ public class Client {
 
     private final AtomicLong seqNum = new AtomicLong(0);
 
-    private static Logger logger = LoggerFactory.getLogger(Client.class);
+//    private static Logger logger = LoggerFactory.getLogger(Client.class);
 
-    private ConcurrentHashMap<Long, RpcCallback<Message>> callbackConcurrentHashMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
-    private ConcurrentHashMap<Long, Message> descriptorProtoConcurrentHashMap = new ConcurrentHashMap<Long, Message>();
+    private ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
+    private ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
 
     public Client(int workerThreads) {
         bootstrap = new ClientBootstrap();
@@ -73,9 +71,9 @@ public class Client {
                     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
                         POC.Response response = (POC.Response) e.getMessage();
 
-                        Message m = descriptorProtoConcurrentHashMap.remove(response.getRequestId())
+                        Message m = descriptorProtoMap.remove(response.getRequestId())
                                 .newBuilderForType().mergeFrom(response.getResponse()).build();
-                        callbackConcurrentHashMap.remove(response.getRequestId()).run(m);
+                        callbackMap.remove(response.getRequestId()).run(m);
 
                         super.messageReceived(ctx, e);
                     }
@@ -96,8 +94,8 @@ public class Client {
                         .setMethodArgument(request.toByteString())
                         .setRequestId(id)
                         .build());
-                callbackConcurrentHashMap.put(id, done);
-                descriptorProtoConcurrentHashMap.put(id, responsePrototype);
+                callbackMap.put(id, done);
+                descriptorProtoMap.put(id, responsePrototype);
             }
         };
     }

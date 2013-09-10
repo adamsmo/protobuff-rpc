@@ -27,9 +27,13 @@ import my.adam.smo.POC;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 public class UsefullThing implements POC.NewUsefullService.Interface {
+
+//    private Logger logger = LoggerFactory.getLogger(getClass());
+
     @Override
     public void doGoodJob(RpcController controller, POC.In request, RpcCallback<POC.Out> done) {
-        done.run(POC.Out.newBuilder().setResult(request.getOperand1()+request.getOperand2()).build());
+        done.run(POC.Out.newBuilder().setResult(request.getOperand1() + request.getOperand2()).build());
     }
 }

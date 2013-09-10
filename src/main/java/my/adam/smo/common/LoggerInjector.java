@@ -1,6 +1,13 @@
-package my.adam.smo;
+package my.adam.smo.common;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
 
 /**
  * The MIT License
@@ -25,20 +32,25 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public class ServerTest {
-//    private static Logger logger = LoggerFactory.getLogger(ServerTest.class);
+@Component
+public class LoggerInjector implements BeanPostProcessor {
+    @Override
+    public Object postProcessBeforeInitialization(final Object bean, String beanName) throws BeansException {
+        ReflectionUtils.doWithFields(bean.getClass(), new ReflectionUtils.FieldCallback() {
+            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+                ReflectionUtils.makeAccessible(field);
+                if (field.getAnnotation(Log.class) != null) {
+                    Logger logger = LoggerFactory.getLogger(bean.getClass());
+                    field.set(bean, logger);
+                }
+            }
+        });
 
-    public static void main(String[] args) {
-//        Server s = new Server(40);
-//        s.register(POC.SearchService.newReflectiveService(new SearchServiceImpl()));
-//        s.register(POC.AwsomeSearch.newReflectiveService(new AwsomeSearchServiceImpl()));
-//        s.register(POC.NewUsefullService.newReflectiveService(new UsefullThing()));
+        return bean;
+    }
 
-
-        //spring based
-        new ClassPathXmlApplicationContext("Context.xml");
-//
-//        Server s = (Server)applicationContext.getBean("my_server");
-//        s.start(new InetSocketAddress(8080));
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
     }
 }

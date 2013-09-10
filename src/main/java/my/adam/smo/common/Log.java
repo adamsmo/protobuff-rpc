@@ -1,6 +1,9 @@
-package my.adam.smo;
+package my.adam.smo.common;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * The MIT License
@@ -25,20 +28,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public class ServerTest {
-//    private static Logger logger = LoggerFactory.getLogger(ServerTest.class);
-
-    public static void main(String[] args) {
-//        Server s = new Server(40);
-//        s.register(POC.SearchService.newReflectiveService(new SearchServiceImpl()));
-//        s.register(POC.AwsomeSearch.newReflectiveService(new AwsomeSearchServiceImpl()));
-//        s.register(POC.NewUsefullService.newReflectiveService(new UsefullThing()));
-
-
-        //spring based
-        new ClassPathXmlApplicationContext("Context.xml");
-//
-//        Server s = (Server)applicationContext.getBean("my_server");
-//        s.start(new InetSocketAddress(8080));
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD})
+public @interface Log {
 }
