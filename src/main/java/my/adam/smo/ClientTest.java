@@ -40,15 +40,15 @@ public class ClientTest {
     public static void main(String[] args) {
 
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("Context.xml");
-        Client c = (Client) applicationContext.getBean(Client.class);
+        Client c = applicationContext.getBean(Client.class);
 
-        RpcChannel rpcc = c.connect(new InetSocketAddress("localhost", 8080));
+        RpcChannel rpcChannel = c.connect(new InetSocketAddress("localhost", 8080));
 
-        POC.SearchService searchService = POC.SearchService.newStub(rpcc);
-        POC.AwsomeSearch awsomeSearch = POC.AwsomeSearch.newStub(rpcc);
-        POC.NewUsefullService usefullService = POC.NewUsefullService.newStub(rpcc);
+        POC.SearchService searchService = POC.SearchService.newStub(rpcChannel);
+        POC.AwsomeSearch awsomeSearch = POC.AwsomeSearch.newStub(rpcChannel);
+        POC.NewUsefullService usefullService = POC.NewUsefullService.newStub(rpcChannel);
 
-        while (true) {
+        for (int i = 0; i < 10; i++) {
             searchService.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("le mess").build(),
                     new RpcCallback<POC.hello>() {
                         @Override
@@ -79,6 +79,6 @@ public class ClientTest {
                 e.printStackTrace();
             }
         }
-        //c.disconnect();
+        c.disconnect();
     }
 }

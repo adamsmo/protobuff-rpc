@@ -29,20 +29,9 @@ import java.net.InetSocketAddress;
  * THE SOFTWARE.
  */
 public class ServerTest {
-//    private static Logger logger = LoggerFactory.getLogger(ServerTest.class);
 
     public static void main(String[] args) {
-//        Server s = new Server(40);
-//        s.register(POC.SearchService.newReflectiveService(new SearchServiceImpl()));
-//        s.register(POC.AwsomeSearch.newReflectiveService(new AwsomeSearchServiceImpl()));
-//        s.register(POC.NewUsefullService.newReflectiveService(new UsefullThing()));
-
-
-        //spring based
         Server s = new ClassPathXmlApplicationContext("Context.xml").getBean(Server.class);
         s.start(new InetSocketAddress(8080));
-//
-//        Server s = (Server)applicationContext.getBean("my_server");
-//        s.start(new InetSocketAddress(8080));
     }
 }
