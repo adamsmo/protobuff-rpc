@@ -2,6 +2,7 @@ package my.adam.smo.client;
 
 import com.google.protobuf.*;
 import my.adam.smo.POC;
+import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -9,7 +10,11 @@ import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -38,6 +43,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+@Component
 public class Client {
 
     private final ClientBootstrap bootstrap;
@@ -45,12 +52,14 @@ public class Client {
 
     private final AtomicLong seqNum = new AtomicLong(0);
 
-//    private static Logger logger = LoggerFactory.getLogger(Client.class);
+    @InjectLogger
+    private Logger logger;
 
     private ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
     private ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
 
-    public Client(int workerThreads) {
+    @Inject
+    public Client(@Value("${client_worker_threads}") int workerThreads) {
         bootstrap = new ClientBootstrap();
         bootstrap.setFactory(new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),

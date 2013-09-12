@@ -3,7 +3,7 @@ package my.adam.smo.server;
 import com.google.protobuf.*;
 import my.adam.smo.DummyRpcController;
 import my.adam.smo.POC;
-import my.adam.smo.common.Log;
+import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
@@ -12,7 +12,10 @@ import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -40,17 +43,18 @@ import java.util.concurrent.Executors;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
+@Component
 public class Server {
     private final ServerBootstrap bootstrap;
     private static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
 
-    @Log
-    Logger logger;
+    @InjectLogger
+    private Logger logger;
 
     private ConcurrentHashMap<String, Service> serviceMap = new ConcurrentHashMap<String, Service>();
 
-    public Server(int workerCount) {
+    @Inject
+    public Server(@Value("${client_worker_threads}") int workerCount) {
         bootstrap = new ServerBootstrap();
         bootstrap.setFactory(new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),

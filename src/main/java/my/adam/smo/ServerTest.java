@@ -1,6 +1,9 @@
 package my.adam.smo;
 
+import my.adam.smo.server.Server;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.net.InetSocketAddress;
 
 /**
  * The MIT License
@@ -36,7 +39,8 @@ public class ServerTest {
 
 
         //spring based
-        new ClassPathXmlApplicationContext("Context.xml");
+        Server s = new ClassPathXmlApplicationContext("Context.xml").getBean(Server.class);
+        s.start(new InetSocketAddress(8080));
 //
 //        Server s = (Server)applicationContext.getBean("my_server");
 //        s.start(new InetSocketAddress(8080));

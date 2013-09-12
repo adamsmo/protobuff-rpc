@@ -32,6 +32,11 @@ import java.lang.reflect.Field;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+/**
+ * works only with beans annotated as @Component does not work wit
+ * @Configuration and @Bean
+ */
 @Component
 public class LoggerInjector implements BeanPostProcessor {
     @Override
@@ -39,7 +44,7 @@ public class LoggerInjector implements BeanPostProcessor {
         ReflectionUtils.doWithFields(bean.getClass(), new ReflectionUtils.FieldCallback() {
             public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
                 ReflectionUtils.makeAccessible(field);
-                if (field.getAnnotation(Log.class) != null) {
+                if (field.getAnnotation(InjectLogger.class) != null) {
                     Logger logger = LoggerFactory.getLogger(bean.getClass());
                     field.set(bean, logger);
                 }

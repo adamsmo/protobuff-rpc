@@ -40,7 +40,7 @@ public class ClientTest {
     public static void main(String[] args) {
 
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("Context.xml");
-        Client c = (Client) applicationContext.getBean("my_client");
+        Client c = (Client) applicationContext.getBean(Client.class);
 
         RpcChannel rpcc = c.connect(new InetSocketAddress("localhost", 8080));
 
