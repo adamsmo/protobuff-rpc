@@ -115,7 +115,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>0.9.18</version>
+            <version>1.0.13</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -127,22 +127,22 @@
             <artifactId>guava</artifactId>
             <version>r09</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>jcl-over-slf4j</artifactId>-->
-            <!--<version>1.7.5</version>-->
-            <!--<scope>runtime</scope>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.5</version>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>3.2.4.RELEASE</version>
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<artifactId>commons-logging</artifactId>-->
-                    <!--<groupId>commons-logging</groupId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
