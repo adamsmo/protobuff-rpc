@@ -1,10 +1,10 @@
 package my.adam.smo.serviceimpl;
 
-import com.google.protobuf.RpcCallback;
-import com.google.protobuf.RpcController;
 import com.google.protobuf.Service;
-import my.adam.smo.POC;
-import org.springframework.stereotype.Component;
+import my.adam.smo.server.Server;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.PostConstruct;
 
 /**
  * The MIT License
@@ -29,16 +29,14 @@ import org.springframework.stereotype.Component;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-@Component
-public class UsefullThing extends AbstractServiceImpl implements POC.NewUsefullService.Interface {
+public abstract class AbstractServiceImpl {
+    @Autowired
+    private Server server;
 
-    @Override
-    public Service getService() {
-        return POC.NewUsefullService.newReflectiveService(this);
+    @PostConstruct
+    public void init() {
+        server.register(getService());
     }
 
-    @Override
-    public void doGoodJob(RpcController controller, POC.In request, RpcCallback<POC.Out> done) {
-        done.run(POC.Out.newBuilder().setResult(request.getOperand1() + request.getOperand2()).build());
-    }
+    public abstract Service getService();
 }

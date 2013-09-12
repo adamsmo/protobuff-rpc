@@ -2,12 +2,9 @@ package my.adam.smo.serviceimpl;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
+import com.google.protobuf.Service;
 import my.adam.smo.POC;
-import my.adam.smo.server.Server;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 /**
  * The MIT License
@@ -34,18 +31,15 @@ import javax.annotation.PostConstruct;
  */
 
 @Component
-public class AwsomeSearchServiceImpl implements POC.AwsomeSearch.Interface{
-
-    @Autowired
-    private Server server;
-
-    @PostConstruct
-    public void init(){
-        server.register(POC.AwsomeSearch.newReflectiveService(this));
-    }
+public class AwsomeSearchServiceImpl extends AbstractServiceImpl implements POC.AwsomeSearch.Interface {
 
     @Override
     public void search(RpcController controller, POC.hello request, RpcCallback<POC.awsomeAnswer> done) {
         done.run(POC.awsomeAnswer.newBuilder().setAnswer("wynik szukania dla z dodatkową fajnością = " + request.getMessag()).build());
+    }
+
+    @Override
+    public Service getService() {
+        return POC.AwsomeSearch.newReflectiveService(this);
     }
 }
