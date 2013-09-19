@@ -153,6 +153,7 @@ public class Client {
     }
 
     public void disconnect() {
+        bootstrap.shutdown();
         bootstrap.releaseExternalResources();
     }
 }
