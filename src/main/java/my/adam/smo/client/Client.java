@@ -19,6 +19,7 @@ import java.net.ConnectException;
 import java.net.SocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -117,6 +118,36 @@ public class Client {
                         .build());
                 callbackMap.put(id, done);
                 descriptorProtoMap.put(id, responsePrototype);
+            }
+        };
+    }
+
+    public BlockingRpcChannel blockingConnect(final SocketAddress sa) {
+        return new BlockingRpcChannel() {
+            private int ARBITRARY_CONSTANT = 1;
+            private final CountDownLatch callbackLatch =
+                    new CountDownLatch(ARBITRARY_CONSTANT);
+
+            private Message result;
+            private RpcChannel rpc = connect(sa);
+
+            @Override
+            public Message callBlockingMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype) throws ServiceException {
+                RpcCallback<Message> done = new RpcCallback<Message>() {
+                    @Override
+                    public void run(Message parameter) {
+                        result = parameter;
+                        callbackLatch.countDown();
+                    }
+                };
+
+                rpc.callMethod(method, controller, request, responsePrototype, done);
+                try {
+                    callbackLatch.await();
+                } catch (InterruptedException e) {
+                    logger.error("call failed", e);
+                }
+                return result;
             }
         };
     }

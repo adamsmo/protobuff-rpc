@@ -1,7 +1,9 @@
 package my.adam.smo;
 
+import com.google.protobuf.BlockingRpcChannel;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
+import com.google.protobuf.ServiceException;
 import my.adam.smo.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +50,19 @@ public class ClientTest {
         POC.AwsomeSearch awsomeSearch = POC.AwsomeSearch.newStub(rpcChannel);
         POC.NewUsefullService usefullService = POC.NewUsefullService.newStub(rpcChannel);
 
+
+        BlockingRpcChannel brc = c.blockingConnect(new InetSocketAddress("localhost", 8080));
+        POC.SearchService.BlockingInterface blockingSearchService = POC.SearchService.newBlockingStub(brc);
+        try {
+            POC.hello resp = blockingSearchService.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("ala ma 32 koty").build());
+            logger.debug("-----------------------------------");
+            logger.debug("-    return from blocking call    -");
+            logger.debug("-----------------------------------");
+            logger.debug(resp.getMessag());
+        } catch (ServiceException e) {
+            logger.error("call failed", e);
+        }
+
         for (int i = 0; i < 10; i++) {
             searchService.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("le mess").build(),
                     new RpcCallback<POC.hello>() {
@@ -74,7 +89,7 @@ public class ClientTest {
             });
 
             try {
-                Thread.sleep(3000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
