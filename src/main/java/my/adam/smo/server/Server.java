@@ -54,7 +54,7 @@ public class Server {
     private ConcurrentHashMap<String, Service> serviceMap = new ConcurrentHashMap<String, Service>();
 
     @Inject
-    public Server(@Value("${client_worker_threads}") int workerCount) {
+    public Server(@Value("${server_worker_threads}") int workerCount) {
         bootstrap = new ServerBootstrap();
         bootstrap.setFactory(new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),

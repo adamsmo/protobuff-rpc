@@ -58,6 +58,11 @@ public class Client {
     @InjectLogger
     private Logger logger;
 
+    @Value("${reconnect}")
+    private boolean reconnect;
+    @Value("${reconnect_delay}")
+    private int reconnect_delay;
+
     private ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
     private ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
 
@@ -105,12 +110,27 @@ public class Client {
         });
     }
 
-    public RpcChannel connect(SocketAddress sa) {
-        final Channel c = bootstrap.connect(sa).awaitUninterruptibly().getChannel();
+    public RpcChannel connect(final SocketAddress sa) {
         return new RpcChannel() {
+            private Channel c = bootstrap.connect(sa).awaitUninterruptibly().getChannel();
+
             @Override
             public void callMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype, RpcCallback<Message> done) {
                 long id = seqNum.addAndGet(1);
+
+                //infinit reconnection loop
+                while (reconnect && !c.isOpen()) {
+                    logger.debug("channel closed " + sa);
+                    c.disconnect().awaitUninterruptibly();
+                    c.unbind().awaitUninterruptibly();
+                    c = bootstrap.connect(sa).awaitUninterruptibly().getChannel();
+                    try {
+                        Thread.sleep(reconnect_delay);
+                    } catch (InterruptedException e) {
+                        logger.error("error while sleeping", e);
+                    }
+                }
+
                 c.write(POC.Request.newBuilder().setServiceName(method.getService().getFullName())
                         .setMethodName(method.getName())
                         .setMethodArgument(request.toByteString())
