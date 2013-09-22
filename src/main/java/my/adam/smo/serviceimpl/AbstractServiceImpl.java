@@ -1,7 +1,7 @@
 package my.adam.smo.serviceimpl;
 
 import com.google.protobuf.Service;
-import my.adam.smo.server.Server;
+import my.adam.smo.server.SocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
@@ -31,7 +31,7 @@ import javax.annotation.PostConstruct;
  */
 public abstract class AbstractServiceImpl {
     @Autowired
-    private Server server;
+    private SocketServer server;
 
     @PostConstruct
     public void init() {

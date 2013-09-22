@@ -4,7 +4,7 @@ import com.google.protobuf.BlockingRpcChannel;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.ServiceException;
-import my.adam.smo.client.Client;
+import my.adam.smo.client.SocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -42,7 +42,7 @@ public class ClientTest {
     public static void main(String[] args) {
 
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("Context.xml");
-        Client c = applicationContext.getBean(Client.class);
+        SocketClient c = applicationContext.getBean(SocketClient.class);
 
         RpcChannel rpcChannel = c.connect(new InetSocketAddress("localhost", 8080));
 

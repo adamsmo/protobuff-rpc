@@ -1,9 +1,9 @@
-package my.adam.smo;
+package my.adam.smo.client;
 
-import my.adam.smo.server.SocketServer;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.google.protobuf.BlockingRpcChannel;
+import com.google.protobuf.RpcChannel;
 
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 /**
  * The MIT License
@@ -28,10 +28,19 @@ import java.net.InetSocketAddress;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public class ServerTest {
+public class HTTPCient implements Client{
+    @Override
+    public RpcChannel connect(SocketAddress sa) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-    public static void main(String[] args) {
-        SocketServer s = new ClassPathXmlApplicationContext("Context.xml").getBean(SocketServer.class);
-        s.start(new InetSocketAddress(8080));
+    @Override
+    public BlockingRpcChannel blockingConnect(SocketAddress sa) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void disconnect() {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }
