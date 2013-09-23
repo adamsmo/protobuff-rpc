@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 @Component
-public class SocketClient implements Client{
+public class SocketClient implements Client {
 
     private final ClientBootstrap bootstrap;
     private static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
@@ -77,12 +77,12 @@ public class SocketClient implements Client{
             public ChannelPipeline getPipeline() throws Exception {
 
                 ChannelPipeline p = Channels.pipeline();
-                p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(MAX_FRAME_BYTES_LENGTH, 0, 4, 0, 4));
-                p.addLast("protobufDecoder", new ProtobufDecoder(POC.Response.getDefaultInstance()));
 
-                p.addLast("frameEncoder", new LengthFieldPrepender(4));
-                p.addLast("protobufEncoder", new ProtobufEncoder());
+                p.addLast("frameEncoder", new LengthFieldPrepender(4));//DownstreamHandler
+                p.addLast("protobufEncoder", new ProtobufEncoder());//DownstreamHandler
 
+                p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(MAX_FRAME_BYTES_LENGTH, 0, 4, 0, 4));//UpstreamHandler
+                p.addLast("protobufDecoder", new ProtobufDecoder(POC.Response.getDefaultInstance()));//UpstreamHandler
                 p.addLast("handler", new SimpleChannelUpstreamHandler() {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
