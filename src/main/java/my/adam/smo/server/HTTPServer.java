@@ -5,17 +5,18 @@ import my.adam.smo.DummyRpcController;
 import my.adam.smo.POC;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.base64.Base64Decoder;
-import org.jboss.netty.handler.codec.base64.Base64Encoder;
-import org.jboss.netty.handler.codec.http.HttpContentCompressor;
-import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
-import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
-import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
+import org.jboss.netty.handler.codec.base64.Base64;
+import org.jboss.netty.handler.codec.base64.Base64Dialect;
+import org.jboss.netty.handler.codec.http.*;
+import org.jboss.netty.handler.logging.LoggingHandler;
+import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.net.SocketAddress;
@@ -45,16 +46,17 @@ import java.util.concurrent.Executors;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+@Component
 public class HTTPServer implements Server {
     private final ServerBootstrap bootstrap;
-
+    private static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
     @InjectLogger
     private Logger logger;
 
     private ConcurrentHashMap<String, Service> serviceMap = new ConcurrentHashMap<String, Service>();
 
     @Inject
-    public HTTPServer(@Value("${server_worker_threads}") int workerCount){
+    public HTTPServer(@Value("${server_worker_threads}") int workerCount) {
         bootstrap = new ServerBootstrap();
 
         bootstrap.setFactory(new NioServerSocketChannelFactory(
@@ -67,19 +69,21 @@ public class HTTPServer implements Server {
             public ChannelPipeline getPipeline() throws Exception {
                 ChannelPipeline p = Channels.pipeline();
 
-                p.addLast("encoder", new HttpResponseEncoder());//DownstreamHandler
-                p.addLast("base64Encoder", new Base64Encoder());//DownstreamHandler
-                p.addLast("protobufEncoder", new ProtobufEncoder());//DownstreamHandler
+                p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
 
+                p.addLast("decoder", new HttpRequestDecoder());
 
-                p.addLast("decoder", new HttpRequestDecoder());//UpstreamHandler
-                p.addLast("compressor", new HttpContentCompressor());//UpstreamHandler
-                p.addLast("base64Decoder", new Base64Decoder());
-                p.addLast("protobufDecoder", new ProtobufDecoder(POC.Request.getDefaultInstance()));
-                p.addLast("handler", new SimpleChannelUpstreamHandler(){
+                p.addLast("encoder", new HttpResponseEncoder());
+                p.addLast("compressor", new HttpContentCompressor());
+
+                p.addLast("handler", new SimpleChannelUpstreamHandler() {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
-                        final POC.Request request = (POC.Request) e.getMessage();
+                        final DefaultHttpRequest httpRequest = (DefaultHttpRequest) e.getMessage();
+                        ChannelBuffer cb = Base64.decode(httpRequest.getContent(), Base64Dialect.URL_SAFE);
+
+                        final POC.Request request = POC.Request.parseFrom(cb.array());
+
                         RpcController dummyController = new DummyRpcController();
                         Service service = serviceMap.get(request.getServiceName());
 
@@ -96,13 +100,19 @@ public class HTTPServer implements Server {
                         RpcCallback<Message> callback = new RpcCallback<Message>() {
                             @Override
                             public void run(Message parameter) {
-                                POC.Response resp = POC
+                                HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+
+                                byte[] arr = POC
                                         .Response
                                         .newBuilder()
                                         .setResponse(parameter.toByteString())
                                         .setRequestId(request.getRequestId())
-                                        .build();
-                                e.getChannel().write(resp);
+                                        .build().toByteArray();
+
+                                ChannelBuffer resp = Base64.encode(ChannelBuffers.copiedBuffer(arr), Base64Dialect.URL_SAFE);
+                                response.setContent(resp);
+
+                                e.getChannel().write(response);
                                 logger.debug("finishing call, response sended");
                             }
                         };
