@@ -1,6 +1,10 @@
 package my.adam.smo;
 
+import my.adam.smo.server.HTTPServer;
 import my.adam.smo.server.SocketServer;
+import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.logging.Slf4JLoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.net.InetSocketAddress;
@@ -31,7 +35,12 @@ import java.net.InetSocketAddress;
 public class ServerTest {
 
     public static void main(String[] args) {
-        SocketServer s = new ClassPathXmlApplicationContext("Context.xml").getBean(SocketServer.class);
+        InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
+
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("Context.xml");
+        SocketServer s = ctx.getBean(SocketServer.class);
+        HTTPServer hs = ctx.getBean(HTTPServer.class);
         s.start(new InetSocketAddress(8080));
+        hs.start(new InetSocketAddress(8090));
     }
 }

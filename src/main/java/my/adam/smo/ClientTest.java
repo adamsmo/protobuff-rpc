@@ -1,10 +1,11 @@
 package my.adam.smo;
 
-import com.google.protobuf.BlockingRpcChannel;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
-import com.google.protobuf.ServiceException;
+import my.adam.smo.client.HTTPCient;
 import my.adam.smo.client.SocketClient;
+import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -40,30 +41,45 @@ public class ClientTest {
     private static Logger logger = LoggerFactory.getLogger(ClientTest.class);
 
     public static void main(String[] args) {
+        InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
 
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("Context.xml");
         SocketClient c = applicationContext.getBean(SocketClient.class);
+        HTTPCient hc = applicationContext.getBean(HTTPCient.class);
 
-        RpcChannel rpcChannel = c.connect(new InetSocketAddress("localhost", 8080));
+        RpcChannel rpcChannel = hc.connect(new InetSocketAddress("localhost", 8090));
 
         POC.SearchService searchService = POC.SearchService.newStub(rpcChannel);
         POC.AwsomeSearch awsomeSearch = POC.AwsomeSearch.newStub(rpcChannel);
         POC.NewUsefullService usefullService = POC.NewUsefullService.newStub(rpcChannel);
 
+        // blocking socket test
+//        BlockingRpcChannel brc = c.blockingConnect(new InetSocketAddress("localhost", 8080));
+//        POC.SearchService.BlockingInterface blockingSearchService = POC.SearchService.newBlockingStub(brc);
+//        try {
+//            POC.hello resp = blockingSearchService.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("ala ma 32 koty").build());
+//            logger.debug("-----------------------------------");
+//            logger.debug("-    return from blocking call    -");
+//            logger.debug("-----------------------------------");
+//            logger.debug(resp.getMessag());
+//        } catch (ServiceException e) {
+//            logger.error("call failed", e);
+//        }
 
-        BlockingRpcChannel brc = c.blockingConnect(new InetSocketAddress("localhost", 8080));
-        POC.SearchService.BlockingInterface blockingSearchService = POC.SearchService.newBlockingStub(brc);
-        try {
-            POC.hello resp = blockingSearchService.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("ala ma 32 koty").build());
-            logger.debug("-----------------------------------");
-            logger.debug("-    return from blocking call    -");
-            logger.debug("-----------------------------------");
-            logger.debug(resp.getMessag());
-        } catch (ServiceException e) {
-            logger.error("call failed", e);
-        }
+        // blocking http test
+//        BlockingRpcChannel bhc = hc.blockingConnect(new InetSocketAddress("localhost", 8090));
+//        POC.SearchService.BlockingInterface blockingSearchServiceHTTP = POC.SearchService.newBlockingStub(bhc);
+//        try {
+//            POC.hello resp = blockingSearchServiceHTTP.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("ala ma 32 koty").build());
+//            logger.debug("-----------------------------------");
+//            logger.debug("- return from blocking HTTP call  -");
+//            logger.debug("-----------------------------------");
+//            logger.debug(resp.getMessag());
+//        } catch (ServiceException e) {
+//            logger.error("call failed", e);
+//        }
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1; i++) {
             searchService.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("le mess").build(),
                     new RpcCallback<POC.hello>() {
                         @Override
@@ -73,20 +89,20 @@ public class ClientTest {
                     }
             );
 
-            awsomeSearch.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("ala ma kota").build(),
-                    new RpcCallback<POC.awsomeAnswer>() {
-                        @Override
-                        public void run(POC.awsomeAnswer parameter) {
-                            logger.debug(parameter.getAnswer());
-                        }
-                    });
-
-            usefullService.doGoodJob(new DummyRpcController(), POC.In.newBuilder().setOperand1(15).setOperand2(29).build(), new RpcCallback<POC.Out>() {
-                @Override
-                public void run(POC.Out parameter) {
-                    logger.debug("" + parameter.getResult());
-                }
-            });
+//            awsomeSearch.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("ala ma kota").build(),
+//                    new RpcCallback<POC.awsomeAnswer>() {
+//                        @Override
+//                        public void run(POC.awsomeAnswer parameter) {
+//                            logger.debug(parameter.getAnswer());
+//                        }
+//                    });
+//
+//            usefullService.doGoodJob(new DummyRpcController(), POC.In.newBuilder().setOperand1(15).setOperand2(29).build(), new RpcCallback<POC.Out>() {
+//                @Override
+//                public void run(POC.Out parameter) {
+//                    logger.debug("" + parameter.getResult());
+//                }
+//            });
 
             try {
                 Thread.sleep(1000);
@@ -95,5 +111,6 @@ public class ClientTest {
             }
         }
         c.disconnect();
+        hc.disconnect();
     }
 }
