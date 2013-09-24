@@ -4,7 +4,6 @@ import com.google.protobuf.*;
 import my.adam.smo.DummyRpcController;
 import my.adam.smo.POC;
 import my.adam.smo.common.InjectLogger;
-import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.*;
@@ -19,8 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.net.SocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 /**
@@ -47,18 +44,12 @@ import java.util.concurrent.Executors;
  * THE SOFTWARE.
  */
 @Component
-public class HTTPServer implements Server {
-    private final ServerBootstrap bootstrap;
-    private static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
+public class HTTPServer extends Server {
     @InjectLogger
     private Logger logger;
 
-    private ConcurrentHashMap<String, Service> serviceMap = new ConcurrentHashMap<String, Service>();
-
     @Inject
     public HTTPServer(@Value("${server_worker_threads}") int workerCount) {
-        bootstrap = new ServerBootstrap();
-
         bootstrap.setFactory(new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool(),
@@ -128,19 +119,8 @@ public class HTTPServer implements Server {
         bootstrap.setPipelineFactory(pipelineFactory);
     }
 
-    public void start(SocketAddress sa) {
-        try {
-            bootstrap.bind(sa);
-        } catch (ChannelException e) {
-            logger.error("error while starting server ", e);
-        }
-    }
-
-    public void stop() {
-        bootstrap.releaseExternalResources();
-    }
-
-    public void register(Service service) {
-        serviceMap.put(service.getDescriptorForType().getFullName(), service);
+    @Override
+    public Logger getLogger() {
+        return logger;
     }
 }

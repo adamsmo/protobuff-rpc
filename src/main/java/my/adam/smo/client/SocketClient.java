@@ -3,7 +3,6 @@ package my.adam.smo.client;
 import com.google.protobuf.*;
 import my.adam.smo.POC;
 import my.adam.smo.common.InjectLogger;
-import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
@@ -18,10 +17,7 @@ import javax.inject.Inject;
 import java.net.ConnectException;
 import java.net.SocketAddress;
 import java.nio.channels.ClosedChannelException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The MIT License
@@ -48,27 +44,13 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 @Component
-public class SocketClient implements Client {
-
-    private final ClientBootstrap bootstrap;
-    private static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
-
-    private final AtomicLong seqNum = new AtomicLong(0);
+public class SocketClient extends Client {
 
     @InjectLogger
     private Logger logger;
 
-    @Value("${reconnect}")
-    private boolean reconnect;
-    @Value("${reconnect_delay}")
-    private int reconnect_delay;
-
-    private ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
-    private ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
-
     @Inject
     public SocketClient(@Value("${client_worker_threads}") int workerThreads) {
-        bootstrap = new ClientBootstrap();
         bootstrap.setFactory(new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool(), workerThreads));
@@ -144,39 +126,8 @@ public class SocketClient implements Client {
     }
 
     @Override
-    public BlockingRpcChannel blockingConnect(final SocketAddress sa) {
-        return new BlockingRpcChannel() {
-            private int ARBITRARY_CONSTANT = 1;
-            private final CountDownLatch callbackLatch =
-                    new CountDownLatch(ARBITRARY_CONSTANT);
-
-            private Message result;
-            private RpcChannel rpc = connect(sa);
-
-            @Override
-            public Message callBlockingMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype) throws ServiceException {
-                RpcCallback<Message> done = new RpcCallback<Message>() {
-                    @Override
-                    public void run(Message parameter) {
-                        result = parameter;
-                        callbackLatch.countDown();
-                    }
-                };
-
-                rpc.callMethod(method, controller, request, responsePrototype, done);
-                try {
-                    callbackLatch.await();
-                } catch (InterruptedException e) {
-                    logger.error("call failed", e);
-                }
-                return result;
-            }
-        };
+    public Logger getLogger() {
+        return logger;
     }
 
-    @Override
-    public void disconnect() {
-        bootstrap.shutdown();
-        bootstrap.releaseExternalResources();
-    }
 }

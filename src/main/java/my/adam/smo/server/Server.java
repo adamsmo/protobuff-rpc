@@ -1,9 +1,12 @@
 package my.adam.smo.server;
 
 import com.google.protobuf.Service;
+import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelException;
+import org.slf4j.Logger;
 
 import java.net.SocketAddress;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The MIT License
@@ -28,8 +31,26 @@ import java.net.SocketAddress;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public interface Server {
-    public void start(SocketAddress sa);
-    public void stop();
-    public void register(Service service);
+public abstract class Server {
+    protected final ServerBootstrap bootstrap = new ServerBootstrap();
+    protected ConcurrentHashMap<String, Service> serviceMap = new ConcurrentHashMap<String, Service>();
+    protected static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
+
+    public void start(SocketAddress sa) {
+        try {
+            bootstrap.bind(sa);
+        } catch (ChannelException e) {
+            getLogger().error("error while starting server ", e);
+        }
+    }
+
+    public void stop() {
+        bootstrap.releaseExternalResources();
+    }
+
+    public void register(Service service) {
+        serviceMap.put(service.getDescriptorForType().getFullName(), service);
+    }
+
+    public abstract Logger getLogger();
 }

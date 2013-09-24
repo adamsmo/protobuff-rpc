@@ -1,9 +1,15 @@
 package my.adam.smo.client;
 
-import com.google.protobuf.BlockingRpcChannel;
-import com.google.protobuf.RpcChannel;
+import com.google.protobuf.*;
+import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.net.SocketAddress;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The MIT License
@@ -28,8 +34,57 @@ import java.net.SocketAddress;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public interface Client {
-    public RpcChannel connect(final SocketAddress sa);
-    public BlockingRpcChannel blockingConnect(final SocketAddress sa);
-    public void disconnect();
+public abstract class Client {
+    protected final ClientBootstrap bootstrap = new ClientBootstrap();
+    protected static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
+    protected final AtomicLong seqNum = new AtomicLong(0);
+
+    @Value("${reconnect}")
+    protected boolean reconnect;
+    @Value("${reconnect_delay}")
+    protected int reconnect_delay;
+    @Value("${blocking_method_timeout}")
+    protected int blocking_method_timeout;
+
+    protected ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
+    protected ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
+
+    public BlockingRpcChannel blockingConnect(final SocketAddress sa) {
+        return new BlockingRpcChannel() {
+            private int ARBITRARY_CONSTANT = 1;
+            private final CountDownLatch callbackLatch =
+                    new CountDownLatch(ARBITRARY_CONSTANT);
+
+            private Message result;
+            private RpcChannel rpc = connect(sa);
+
+            @Override
+            public Message callBlockingMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype) throws ServiceException {
+                RpcCallback<Message> done = new RpcCallback<Message>() {
+                    @Override
+                    public void run(Message parameter) {
+                        result = parameter;
+                        callbackLatch.countDown();
+                    }
+                };
+
+                rpc.callMethod(method, controller, request, responsePrototype, done);
+                try {
+                    callbackLatch.await(blocking_method_timeout, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    getLogger().error("call failed", e);
+                }
+                return result;
+            }
+        };
+    }
+
+    public void disconnect() {
+        bootstrap.shutdown();
+        bootstrap.releaseExternalResources();
+    }
+
+    public abstract RpcChannel connect(final SocketAddress sa);
+
+    public abstract Logger getLogger();
 }

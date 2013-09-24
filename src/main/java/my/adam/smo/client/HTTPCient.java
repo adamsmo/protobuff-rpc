@@ -19,8 +19,6 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.net.SocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -48,21 +46,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * THE SOFTWARE.
  */
 @Component
-public class HTTPCient implements Client {
+public class HTTPCient extends Client {
     private final ClientBootstrap bootstrap;
-    private static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
+    private static final int MAX_CONTENT_LENGTH = Integer.MAX_VALUE;
     private final AtomicLong seqNum = new AtomicLong(0);
 
     @InjectLogger
     private Logger logger;
-
-    @Value("${reconnect}")
-    private boolean reconnect;
-    @Value("${reconnect_delay}")
-    private int reconnect_delay;
-
-    private ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
-    private ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
 
     @Inject
     public HTTPCient(@Value("${client_worker_threads}") int workerThreads) {
@@ -79,7 +69,7 @@ public class HTTPCient implements Client {
                 p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
 
                 p.addLast("codec", new HttpClientCodec());
-                p.addLast("chunkAggregator", new HttpChunkAggregator(MAX_FRAME_BYTES_LENGTH));
+                p.addLast("chunkAggregator", new HttpChunkAggregator(MAX_CONTENT_LENGTH));
                 p.addLast("decompressor", new HttpContentDecompressor());
 
                 p.addLast("handler", new SimpleChannelUpstreamHandler() {
@@ -142,39 +132,8 @@ public class HTTPCient implements Client {
     }
 
     @Override
-    public BlockingRpcChannel blockingConnect(final SocketAddress sa) {
-        return new BlockingRpcChannel() {
-            private int ARBITRARY_CONSTANT = 1;
-            private final CountDownLatch callbackLatch =
-                    new CountDownLatch(ARBITRARY_CONSTANT);
-
-            private Message result;
-            private RpcChannel rpc = connect(sa);
-
-            @Override
-            public Message callBlockingMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype) throws ServiceException {
-                RpcCallback<Message> done = new RpcCallback<Message>() {
-                    @Override
-                    public void run(Message parameter) {
-                        result = parameter;
-                        callbackLatch.countDown();
-                    }
-                };
-
-                rpc.callMethod(method, controller, request, responsePrototype, done);
-                try {
-                    callbackLatch.await();
-                } catch (InterruptedException e) {
-                    logger.error("call failed", e);
-                }
-                return result;
-            }
-        };
+    public Logger getLogger() {
+        return logger;
     }
 
-    @Override
-    public void disconnect() {
-        bootstrap.shutdown();
-        bootstrap.releaseExternalResources();
-    }
 }
