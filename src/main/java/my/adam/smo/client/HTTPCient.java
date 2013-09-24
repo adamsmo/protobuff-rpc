@@ -87,9 +87,9 @@ public class HTTPCient implements Client {
                     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
                         HttpResponse httpResponse = (HttpResponse) e.getMessage();
 
-                        ChannelBuffer cb = Base64.decode(httpResponse.getContent(), Base64Dialect.URL_SAFE);
+                        ChannelBuffer cb = Base64.decode(httpResponse.getContent(), Base64Dialect.STANDARD);
 
-                        POC.Response response = POC.Response.parseFrom(cb.array());
+                        POC.Response response = POC.Response.parseFrom(cb.copy(0, cb.readableBytes()).array());
 
                         Message m = descriptorProtoMap.remove(response.getRequestId())
                                 .newBuilderForType().mergeFrom(response.getResponse()).build();
@@ -125,7 +125,7 @@ public class HTTPCient implements Client {
                         .setRequestId(id)
                         .build().toByteArray();
 
-                ChannelBuffer s = Base64.encode(ChannelBuffers.copiedBuffer(arr), Base64Dialect.URL_SAFE);
+                ChannelBuffer s = Base64.encode(ChannelBuffers.copiedBuffer(arr), Base64Dialect.STANDARD);
 
                 httpRequest.setContent(s);
 

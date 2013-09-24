@@ -80,7 +80,7 @@ public class HTTPServer implements Server {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
                         final DefaultHttpRequest httpRequest = (DefaultHttpRequest) e.getMessage();
-                        ChannelBuffer cb = Base64.decode(httpRequest.getContent(), Base64Dialect.URL_SAFE);
+                        ChannelBuffer cb = Base64.decode(httpRequest.getContent(), Base64Dialect.STANDARD);
 
                         final POC.Request request = POC.Request.parseFrom(cb.array());
 
@@ -109,8 +109,10 @@ public class HTTPServer implements Server {
                                         .setRequestId(request.getRequestId())
                                         .build().toByteArray();
 
-                                ChannelBuffer resp = Base64.encode(ChannelBuffers.copiedBuffer(arr), Base64Dialect.URL_SAFE);
+                                ChannelBuffer resp = Base64.encode(ChannelBuffers.copiedBuffer(arr), Base64Dialect.STANDARD);
+
                                 response.setContent(resp);
+                                response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, resp.readableBytes());
 
                                 e.getChannel().write(response);
                                 logger.debug("finishing call, response sended");
