@@ -13,6 +13,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.protoc.bin>/home/adam/bin/protobuf-2.5.0/src/protoc</project.protoc.bin>
     </properties>
 
     <build>
@@ -50,7 +51,7 @@
                 <artifactId>maven-protoc-plugin</artifactId>
                 <version>0.1.11-SNAPSHOT</version>
                 <configuration>
-                    <protocExecutable>/Users/adam/Downloads/protobuf-2.5.0/src/protoc</protocExecutable>
+                    <protocExecutable>${project.protoc.bin}}</protocExecutable>
                     <protoSourceRoot>
                         ${project.basedir}/src/main/resources/
                     </protoSourceRoot>
