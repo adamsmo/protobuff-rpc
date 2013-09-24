@@ -82,7 +82,7 @@ public class HTTPServer implements Server {
                         final DefaultHttpRequest httpRequest = (DefaultHttpRequest) e.getMessage();
                         ChannelBuffer cb = Base64.decode(httpRequest.getContent(), Base64Dialect.STANDARD);
 
-                        final POC.Request request = POC.Request.parseFrom(cb.array());
+                        final POC.Request request = POC.Request.parseFrom(cb.copy(0, cb.readableBytes()).array());
 
                         RpcController dummyController = new DummyRpcController();
                         Service service = serviceMap.get(request.getServiceName());

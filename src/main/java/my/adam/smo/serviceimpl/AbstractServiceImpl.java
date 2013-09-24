@@ -2,6 +2,7 @@ package my.adam.smo.serviceimpl;
 
 import com.google.protobuf.Service;
 import my.adam.smo.server.Server;
+import my.adam.smo.server.SocketServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -34,10 +35,13 @@ public abstract class AbstractServiceImpl {
     @Autowired
     @Qualifier("HTTPServer")
     private Server server;
+    @Autowired
+    private SocketServer socketServer;
 
     @PostConstruct
     public void init() {
         server.register(getService());
+        socketServer.register(getService());
     }
 
     public abstract Service getService();
