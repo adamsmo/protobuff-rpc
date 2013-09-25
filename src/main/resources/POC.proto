@@ -1,6 +1,9 @@
 option java_package = "my.adam.smo";
+
 option java_outer_classname = "POC";
+
 option java_generic_services = true;
+
 option optimize_for = SPEED;
 
 message hello {
@@ -38,10 +41,12 @@ message Request {
     optional string serviceName = 2;
     optional string methodName = 3;
     optional bytes methodArgument = 4;
+    optional bytes secret = 5;
 }
 
 message Response {
     optional int64 requestId = 1;
     optional bytes response = 2;
     optional string exception = 3;
+    optional bytes secret = 4;
 }

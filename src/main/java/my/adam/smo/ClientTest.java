@@ -81,7 +81,7 @@ public class ClientTest {
             logger.error("call failed", e);
         }
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             searchService.search(new DummyRpcController(), POC.hello.newBuilder().setMessag("le mess").build(),
                     new RpcCallback<POC.hello>() {
                         @Override

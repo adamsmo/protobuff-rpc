@@ -3,7 +3,6 @@ package my.adam.smo.client;
 import com.google.protobuf.*;
 import my.adam.smo.POC;
 import my.adam.smo.common.InjectLogger;
-import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.*;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.net.SocketAddress;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The MIT License
@@ -47,16 +45,13 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @Component
 public class HTTPCient extends Client {
-    private final ClientBootstrap bootstrap;
     private static final int MAX_CONTENT_LENGTH = Integer.MAX_VALUE;
-    private final AtomicLong seqNum = new AtomicLong(0);
 
     @InjectLogger
     private Logger logger;
 
     @Inject
     public HTTPCient(@Value("${client_worker_threads}") int workerThreads) {
-        bootstrap = new ClientBootstrap();
         bootstrap.setFactory(new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool(), workerThreads));

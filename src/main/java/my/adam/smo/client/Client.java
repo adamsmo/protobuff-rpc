@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public abstract class Client {
     protected final ClientBootstrap bootstrap = new ClientBootstrap();
-    protected static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
     protected final AtomicLong seqNum = new AtomicLong(0);
 
     @Value("${reconnect}")

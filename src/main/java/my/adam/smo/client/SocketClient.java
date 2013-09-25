@@ -9,6 +9,8 @@ import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
+import org.jboss.netty.handler.logging.LoggingHandler;
+import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -45,6 +47,7 @@ import java.util.concurrent.Executors;
 
 @Component
 public class SocketClient extends Client {
+    private static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
 
     @InjectLogger
     private Logger logger;
@@ -59,6 +62,8 @@ public class SocketClient extends Client {
             public ChannelPipeline getPipeline() throws Exception {
 
                 ChannelPipeline p = Channels.pipeline();
+
+                p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
 
                 p.addLast("frameEncoder", new LengthFieldPrepender(4));//DownstreamHandler
                 p.addLast("protobufEncoder", new ProtobufEncoder());//DownstreamHandler
