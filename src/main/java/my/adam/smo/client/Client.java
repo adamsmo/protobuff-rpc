@@ -42,8 +42,8 @@ public abstract class Client {
     protected boolean reconnect;
     @Value("${reconnect_delay}")
     protected int reconnect_delay;
-    @Value("${blocking_method_timeout}")
-    protected int blocking_method_timeout;
+    @Value("${blocking_method_call_timeout}")
+    protected int blocking_method_call_timeout;
 
     protected ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
     protected ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
@@ -69,7 +69,7 @@ public abstract class Client {
 
                 rpc.callMethod(method, controller, request, responsePrototype, done);
                 try {
-                    callbackLatch.await(blocking_method_timeout, TimeUnit.SECONDS);
+                    callbackLatch.await(blocking_method_call_timeout, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     getLogger().error("call failed", e);
                 }
