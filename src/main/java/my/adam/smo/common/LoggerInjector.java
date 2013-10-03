@@ -34,7 +34,8 @@ import java.lang.reflect.Field;
  */
 
 /**
- * works only with beans annotated as @Component does not work wit
+ * works only with beans annotated as @Component does NOT work wit
+ *
  * @Configuration and @Bean
  */
 @Component

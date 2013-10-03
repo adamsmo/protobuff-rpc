@@ -3,6 +3,7 @@ package my.adam.smo.server;
 import com.google.protobuf.*;
 import my.adam.smo.DummyRpcController;
 import my.adam.smo.POC;
+import my.adam.smo.common.AsymmetricEncryptionBox;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -14,6 +15,7 @@ import org.jboss.netty.handler.codec.http.*;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +49,10 @@ import java.util.concurrent.Executors;
 public class HTTPServer extends Server {
     @InjectLogger
     private Logger logger;
+    @Autowired
+    private AsymmetricEncryptionBox asymmetricEncryptionBox;
+    @Value("${enable_symmetric_encryption:false}")
+    private boolean enableSymmetricEncryption;
 
     @Inject
     public HTTPServer(@Value("${server_worker_threads}") int workerCount) {
@@ -60,8 +66,9 @@ public class HTTPServer extends Server {
             public ChannelPipeline getPipeline() throws Exception {
                 ChannelPipeline p = Channels.pipeline();
 
-                p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
-
+                if (enableTrafficLogging) {
+                    p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
+                }
                 p.addLast("decoder", new HttpRequestDecoder());
 
                 p.addLast("encoder", new HttpResponseEncoder());
@@ -91,22 +98,27 @@ public class HTTPServer extends Server {
                         RpcCallback<Message> callback = new RpcCallback<Message>() {
                             @Override
                             public void run(Message parameter) {
-                                HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+                                HttpResponse httpResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
 
-                                byte[] arr = POC
-                                        .Response
+                                POC.Response response = POC.Response
                                         .newBuilder()
                                         .setResponse(parameter.toByteString())
                                         .setRequestId(request.getRequestId())
-                                        .build().toByteArray();
+                                        .build();
+
+                                if (enableSymmetricEncryption) {
+                                    response = getEncryptedResponse(response);
+                                }
+
+                                byte[] arr = response.toByteArray();
 
                                 ChannelBuffer resp = Base64.encode(ChannelBuffers.copiedBuffer(arr), Base64Dialect.STANDARD);
 
-                                response.setContent(resp);
-                                response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, resp.readableBytes());
+                                httpResponse.setContent(resp);
+                                httpResponse.addHeader(HttpHeaders.Names.CONTENT_LENGTH, resp.readableBytes());
 
-                                e.getChannel().write(response);
-                                logger.debug("finishing call, response sended");
+                                e.getChannel().write(httpResponse);
+                                logger.debug("finishing call, httpResponse sended");
                             }
                         };
                         logger.debug("calling " + methodToCall.getFullName());

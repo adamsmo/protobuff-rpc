@@ -1,9 +1,14 @@
 package my.adam.smo.server;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Service;
+import my.adam.smo.POC;
+import my.adam.smo.common.SymmetricEncryptionBox;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelException;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +41,11 @@ public abstract class Server {
     protected ConcurrentHashMap<String, Service> serviceMap = new ConcurrentHashMap<String, Service>();
     protected static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
 
+    @Value("${enable_traffic_logging:false}")
+    protected boolean enableTrafficLogging;
+    @Autowired
+    private SymmetricEncryptionBox symmetricEncryptionBox;
+
     public void start(SocketAddress sa) {
         try {
             bootstrap.bind(sa);
@@ -50,6 +60,14 @@ public abstract class Server {
 
     public void register(Service service) {
         serviceMap.put(service.getDescriptorForType().getFullName(), service);
+    }
+
+    protected POC.Response getEncryptedResponse(POC.Response response) {
+        byte[] encryptedResponse = response.getResponse().toByteArray();
+        ByteString decryptedResponse = ByteString
+                .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse));
+        response = response.toBuilder().setResponse(decryptedResponse).build();
+        return response;
     }
 
     public abstract Logger getLogger();

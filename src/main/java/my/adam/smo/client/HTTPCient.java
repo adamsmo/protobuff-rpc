@@ -2,6 +2,7 @@ package my.adam.smo.client;
 
 import com.google.protobuf.*;
 import my.adam.smo.POC;
+import my.adam.smo.common.AsymmetricEncryptionBox;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -13,6 +14,7 @@ import org.jboss.netty.handler.codec.http.*;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +52,12 @@ public class HTTPCient extends Client {
     @InjectLogger
     private Logger logger;
 
+    @Value("${enable_symmetric_encryption:false}")
+    private boolean enableSymmetricEncryption;
+
+    @Autowired
+    private AsymmetricEncryptionBox asymmetricEncryptionBox;
+
     @Inject
     public HTTPCient(@Value("${client_worker_threads}") int workerThreads) {
         bootstrap.setFactory(new NioClientSocketChannelFactory(
@@ -61,7 +69,9 @@ public class HTTPCient extends Client {
 
                 ChannelPipeline p = Channels.pipeline();
 
-                p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
+                if (enableTrafficLogging) {
+                    p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
+                }
 
                 p.addLast("codec", new HttpClientCodec());
                 p.addLast("chunkAggregator", new HttpChunkAggregator(MAX_CONTENT_LENGTH));
@@ -75,6 +85,10 @@ public class HTTPCient extends Client {
                         ChannelBuffer cb = Base64.decode(httpResponse.getContent(), Base64Dialect.STANDARD);
 
                         POC.Response response = POC.Response.parseFrom(cb.copy(0, cb.readableBytes()).array());
+
+                        if (enableSymmetricEncryption) {
+                            response = getDecryptedResponse(response);
+                        }
 
                         Message m = descriptorProtoMap.remove(response.getRequestId())
                                 .newBuilderForType().mergeFrom(response.getResponse()).build();

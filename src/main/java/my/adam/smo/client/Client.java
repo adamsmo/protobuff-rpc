@@ -1,8 +1,11 @@
 package my.adam.smo.client;
 
 import com.google.protobuf.*;
+import my.adam.smo.POC;
+import my.adam.smo.common.SymmetricEncryptionBox;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.net.SocketAddress;
@@ -38,12 +41,17 @@ public abstract class Client {
     protected final ClientBootstrap bootstrap = new ClientBootstrap();
     protected final AtomicLong seqNum = new AtomicLong(0);
 
+    @Autowired
+    private SymmetricEncryptionBox symmetricEncryptionBox;
+
     @Value("${reconnect}")
     protected boolean reconnect;
     @Value("${reconnect_delay}")
     protected int reconnect_delay;
     @Value("${blocking_method_call_timeout}")
     protected int blocking_method_call_timeout;
+    @Value("${enable_traffic_logging:false}")
+    protected boolean enableTrafficLogging;
 
     protected ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
     protected ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
@@ -81,6 +89,14 @@ public abstract class Client {
     public void disconnect() {
         bootstrap.shutdown();
         bootstrap.releaseExternalResources();
+    }
+
+    protected POC.Response getDecryptedResponse(POC.Response response) {
+        byte[] encryptedResponse = response.getResponse().toByteArray();
+        ByteString decryptedResponse = ByteString
+                .copyFrom(symmetricEncryptionBox.decrypt(encryptedResponse));
+        response = response.toBuilder().setResponse(decryptedResponse).build();
+        return response;
     }
 
     public abstract RpcChannel connect(final SocketAddress sa);
