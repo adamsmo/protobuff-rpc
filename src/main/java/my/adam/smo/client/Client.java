@@ -2,6 +2,7 @@ package my.adam.smo.client;
 
 import com.google.protobuf.*;
 import my.adam.smo.POC;
+import my.adam.smo.common.AsymmetricEncryptionBox;
 import my.adam.smo.common.SymmetricEncryptionBox;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.slf4j.Logger;
@@ -43,6 +44,8 @@ public abstract class Client {
 
     @Autowired
     private SymmetricEncryptionBox symmetricEncryptionBox;
+    @Autowired
+    private AsymmetricEncryptionBox asymmetricEncryptionBox;
 
     @Value("${reconnect}")
     protected boolean reconnect;
@@ -98,6 +101,15 @@ public abstract class Client {
         response = response.toBuilder().setResponse(decryptedResponse).build();
         return response;
     }
+
+    protected POC.Response getAsymDecryptedResponse(POC.Response response) {
+        byte[] encryptedResponse = response.getResponse().toByteArray();
+        ByteString decryptedResponse = ByteString
+                .copyFrom(asymmetricEncryptionBox.decrypt(encryptedResponse));
+        response = response.toBuilder().setResponse(decryptedResponse).build();
+        return response;
+    }
+
 
     public abstract RpcChannel connect(final SocketAddress sa);
 

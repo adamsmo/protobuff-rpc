@@ -3,6 +3,7 @@ package my.adam.smo.server;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Service;
 import my.adam.smo.POC;
+import my.adam.smo.common.AsymmetricEncryptionBox;
 import my.adam.smo.common.SymmetricEncryptionBox;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelException;
@@ -43,6 +44,9 @@ public abstract class Server {
 
     @Value("${enable_traffic_logging:false}")
     protected boolean enableTrafficLogging;
+
+    @Autowired
+    private AsymmetricEncryptionBox asymmetricEncryptionBox;
     @Autowired
     private SymmetricEncryptionBox symmetricEncryptionBox;
 
@@ -66,6 +70,14 @@ public abstract class Server {
         byte[] encryptedResponse = response.getResponse().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse));
+        response = response.toBuilder().setResponse(decryptedResponse).build();
+        return response;
+    }
+
+    protected POC.Response getAsymEncryptedResponse(POC.Response response) {
+        byte[] encryptedResponse = response.getResponse().toByteArray();
+        ByteString decryptedResponse = ByteString
+                .copyFrom(asymmetricEncryptionBox.encrypt(encryptedResponse));
         response = response.toBuilder().setResponse(decryptedResponse).build();
         return response;
     }

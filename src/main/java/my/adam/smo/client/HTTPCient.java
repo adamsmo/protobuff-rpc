@@ -2,7 +2,6 @@ package my.adam.smo.client;
 
 import com.google.protobuf.*;
 import my.adam.smo.POC;
-import my.adam.smo.common.AsymmetricEncryptionBox;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -14,7 +13,6 @@ import org.jboss.netty.handler.codec.http.*;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -54,9 +52,8 @@ public class HTTPCient extends Client {
 
     @Value("${enable_symmetric_encryption:false}")
     private boolean enableSymmetricEncryption;
-
-    @Autowired
-    private AsymmetricEncryptionBox asymmetricEncryptionBox;
+    @Value("${enable_asymmetric_encryption:false}")
+    private boolean enableAsymmetricEncryption;
 
     @Inject
     public HTTPCient(@Value("${client_worker_threads}") int workerThreads) {
@@ -85,6 +82,11 @@ public class HTTPCient extends Client {
                         ChannelBuffer cb = Base64.decode(httpResponse.getContent(), Base64Dialect.STANDARD);
 
                         POC.Response response = POC.Response.parseFrom(cb.copy(0, cb.readableBytes()).array());
+
+                        //encryption
+                        if (enableAsymmetricEncryption) {
+                            response = getAsymDecryptedResponse(response);
+                        }
 
                         if (enableSymmetricEncryption) {
                             response = getDecryptedResponse(response);

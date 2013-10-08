@@ -3,7 +3,6 @@ package my.adam.smo.server;
 import com.google.protobuf.*;
 import my.adam.smo.DummyRpcController;
 import my.adam.smo.POC;
-import my.adam.smo.common.AsymmetricEncryptionBox;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -15,7 +14,6 @@ import org.jboss.netty.handler.codec.http.*;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -49,10 +47,11 @@ import java.util.concurrent.Executors;
 public class HTTPServer extends Server {
     @InjectLogger
     private Logger logger;
-    @Autowired
-    private AsymmetricEncryptionBox asymmetricEncryptionBox;
+
     @Value("${enable_symmetric_encryption:false}")
     private boolean enableSymmetricEncryption;
+    @Value("${enable_asymmetric_encryption:false}")
+    private boolean enableAsymmetricEncryption;
 
     @Inject
     public HTTPServer(@Value("${server_worker_threads}") int workerCount) {
@@ -108,6 +107,10 @@ public class HTTPServer extends Server {
 
                                 if (enableSymmetricEncryption) {
                                     response = getEncryptedResponse(response);
+                                }
+
+                                if (enableAsymmetricEncryption) {
+                                    response = getAsymEncryptedResponse(response);
                                 }
 
                                 byte[] arr = response.toByteArray();
