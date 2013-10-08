@@ -1,12 +1,9 @@
 package my.adam.smo.client;
 
 import com.google.protobuf.*;
-import my.adam.smo.POC;
-import my.adam.smo.common.AsymmetricEncryptionBox;
-import my.adam.smo.common.SymmetricEncryptionBox;
+import my.adam.smo.common.AbstractCommunicator;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.net.SocketAddress;
@@ -38,23 +35,17 @@ import java.util.concurrent.atomic.AtomicLong;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public abstract class Client {
+public abstract class Client extends AbstractCommunicator {
     protected final ClientBootstrap bootstrap = new ClientBootstrap();
     protected final AtomicLong seqNum = new AtomicLong(0);
-
-    @Autowired
-    private SymmetricEncryptionBox symmetricEncryptionBox;
-    @Autowired
-    private AsymmetricEncryptionBox asymmetricEncryptionBox;
 
     @Value("${reconnect}")
     protected boolean reconnect;
     @Value("${reconnect_delay}")
     protected int reconnect_delay;
+
     @Value("${blocking_method_call_timeout}")
     protected int blocking_method_call_timeout;
-    @Value("${enable_traffic_logging:false}")
-    protected boolean enableTrafficLogging;
 
     protected ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
     protected ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
@@ -93,23 +84,6 @@ public abstract class Client {
         bootstrap.shutdown();
         bootstrap.releaseExternalResources();
     }
-
-    protected POC.Response getDecryptedResponse(POC.Response response) {
-        byte[] encryptedResponse = response.getResponse().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(symmetricEncryptionBox.decrypt(encryptedResponse));
-        response = response.toBuilder().setResponse(decryptedResponse).build();
-        return response;
-    }
-
-    protected POC.Response getAsymDecryptedResponse(POC.Response response) {
-        byte[] encryptedResponse = response.getResponse().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(asymmetricEncryptionBox.decrypt(encryptedResponse));
-        response = response.toBuilder().setResponse(decryptedResponse).build();
-        return response;
-    }
-
 
     public abstract RpcChannel connect(final SocketAddress sa);
 

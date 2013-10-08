@@ -63,7 +63,9 @@ public class SocketClient extends Client {
 
                 ChannelPipeline p = Channels.pipeline();
 
-                p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
+                if (enableTrafficLogging) {
+                    p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
+                }
 
                 p.addLast("frameEncoder", new LengthFieldPrepender(4));//DownstreamHandler
                 p.addLast("protobufEncoder", new ProtobufEncoder());//DownstreamHandler
@@ -74,6 +76,15 @@ public class SocketClient extends Client {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
                         POC.Response response = (POC.Response) e.getMessage();
+
+                        //encryption
+                        if (enableAsymmetricEncryption) {
+                            response = getAsymDecryptedResponse(response);
+                        }
+
+                        if (enableSymmetricEncryption) {
+                            response = getDecryptedResponse(response);
+                        }
 
                         Message m = descriptorProtoMap.remove(response.getRequestId())
                                 .newBuilderForType().mergeFrom(response.getResponse()).build();

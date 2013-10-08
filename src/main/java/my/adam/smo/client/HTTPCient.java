@@ -50,11 +50,6 @@ public class HTTPCient extends Client {
     @InjectLogger
     private Logger logger;
 
-    @Value("${enable_symmetric_encryption:false}")
-    private boolean enableSymmetricEncryption;
-    @Value("${enable_asymmetric_encryption:false}")
-    private boolean enableAsymmetricEncryption;
-
     @Inject
     public HTTPCient(@Value("${client_worker_threads}") int workerThreads) {
         bootstrap.setFactory(new NioClientSocketChannelFactory(

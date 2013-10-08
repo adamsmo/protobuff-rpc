@@ -58,8 +58,9 @@ public class SocketServer extends Server {
             @Override
             public ChannelPipeline getPipeline() throws Exception {
                 ChannelPipeline p = Channels.pipeline();
-
-                p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
+                if (enableTrafficLogging) {
+                    p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
+                }
 
                 p.addLast("frameEncoder", new LengthFieldPrepender(4));//DownstreamHandler
                 p.addLast("protobufEncoder", new ProtobufEncoder());//DownstreamHandler
@@ -86,13 +87,23 @@ public class SocketServer extends Server {
                         RpcCallback<Message> callback = new RpcCallback<Message>() {
                             @Override
                             public void run(Message parameter) {
-                                POC.Response resp = POC
+                                POC.Response response = POC
                                         .Response
                                         .newBuilder()
                                         .setResponse(parameter.toByteString())
                                         .setRequestId(request.getRequestId())
                                         .build();
-                                e.getChannel().write(resp);
+
+                                //encryption
+                                if (enableSymmetricEncryption) {
+                                    response = getEncryptedResponse(response);
+                                }
+
+                                if (enableAsymmetricEncryption) {
+                                    response = getAsymEncryptedResponse(response);
+                                }
+
+                                e.getChannel().write(response);
                                 logger.debug("finishing call, response sended");
                             }
                         };

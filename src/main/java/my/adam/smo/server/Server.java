@@ -1,15 +1,10 @@
 package my.adam.smo.server;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Service;
-import my.adam.smo.POC;
-import my.adam.smo.common.AsymmetricEncryptionBox;
-import my.adam.smo.common.SymmetricEncryptionBox;
+import my.adam.smo.common.AbstractCommunicator;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelException;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,18 +32,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public abstract class Server {
+public abstract class Server extends AbstractCommunicator {
     protected final ServerBootstrap bootstrap = new ServerBootstrap();
     protected ConcurrentHashMap<String, Service> serviceMap = new ConcurrentHashMap<String, Service>();
     protected static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
-
-    @Value("${enable_traffic_logging:false}")
-    protected boolean enableTrafficLogging;
-
-    @Autowired
-    private AsymmetricEncryptionBox asymmetricEncryptionBox;
-    @Autowired
-    private SymmetricEncryptionBox symmetricEncryptionBox;
 
     public void start(SocketAddress sa) {
         try {
@@ -64,22 +51,6 @@ public abstract class Server {
 
     public void register(Service service) {
         serviceMap.put(service.getDescriptorForType().getFullName(), service);
-    }
-
-    protected POC.Response getEncryptedResponse(POC.Response response) {
-        byte[] encryptedResponse = response.getResponse().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse));
-        response = response.toBuilder().setResponse(decryptedResponse).build();
-        return response;
-    }
-
-    protected POC.Response getAsymEncryptedResponse(POC.Response response) {
-        byte[] encryptedResponse = response.getResponse().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(asymmetricEncryptionBox.encrypt(encryptedResponse));
-        response = response.toBuilder().setResponse(decryptedResponse).build();
-        return response;
     }
 
     public abstract Logger getLogger();

@@ -48,11 +48,6 @@ public class HTTPServer extends Server {
     @InjectLogger
     private Logger logger;
 
-    @Value("${enable_symmetric_encryption:false}")
-    private boolean enableSymmetricEncryption;
-    @Value("${enable_asymmetric_encryption:false}")
-    private boolean enableAsymmetricEncryption;
-
     @Inject
     public HTTPServer(@Value("${server_worker_threads}") int workerCount) {
         bootstrap.setFactory(new NioServerSocketChannelFactory(
