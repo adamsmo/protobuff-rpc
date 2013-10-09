@@ -130,11 +130,21 @@ public class SocketClient extends Client {
                     }
                 }
 
-                c.write(POC.Request.newBuilder().setServiceName(method.getService().getFullName())
+                POC.Request protoRequest = POC.Request.newBuilder().setServiceName(method.getService().getFullName())
                         .setMethodName(method.getName())
                         .setMethodArgument(request.toByteString())
                         .setRequestId(id)
-                        .build());
+                        .build();
+
+                if (enableSymmetricEncryption) {
+                    protoRequest = getEncryptedRequest(protoRequest);
+                }
+
+                if (enableAsymmetricEncryption) {
+                    protoRequest = getAsymEncryptedRequest(protoRequest);
+                }
+
+                c.write(protoRequest);
                 callbackMap.put(id, done);
                 descriptorProtoMap.put(id, responsePrototype);
             }

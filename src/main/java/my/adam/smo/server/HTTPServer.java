@@ -74,7 +74,17 @@ public class HTTPServer extends Server {
                         final DefaultHttpRequest httpRequest = (DefaultHttpRequest) e.getMessage();
                         ChannelBuffer cb = Base64.decode(httpRequest.getContent(), Base64Dialect.STANDARD);
 
-                        final POC.Request request = POC.Request.parseFrom(cb.copy(0, cb.readableBytes()).array());
+                        POC.Request request = POC.Request.parseFrom(cb.copy(0, cb.readableBytes()).array());
+
+                        if (enableAsymmetricEncryption) {
+                            request = getAsymDecryptedRequest(request);
+                        }
+
+                        if (enableSymmetricEncryption) {
+                            request = getDecryptedRequest(request);
+                        }
+
+                        final POC.Request protoRequest = request;
 
                         RpcController dummyController = new DummyRpcController();
                         Service service = serviceMap.get(request.getServiceName());
@@ -97,7 +107,7 @@ public class HTTPServer extends Server {
                                 POC.Response response = POC.Response
                                         .newBuilder()
                                         .setResponse(parameter.toByteString())
-                                        .setRequestId(request.getRequestId())
+                                        .setRequestId(protoRequest.getRequestId())
                                         .build();
 
                                 if (enableSymmetricEncryption) {

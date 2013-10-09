@@ -50,18 +50,18 @@ public abstract class AbstractCommunicator {
         return response;
     }
 
-    protected POC.Response getAsymDecryptedResponse(POC.Response response) {
-        byte[] encryptedResponse = response.getResponse().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(asymmetricEncryptionBox.decrypt(encryptedResponse));
-        response = response.toBuilder().setResponse(decryptedResponse).build();
-        return response;
-    }
-
     protected POC.Response getEncryptedResponse(POC.Response response) {
         byte[] encryptedResponse = response.getResponse().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse));
+        response = response.toBuilder().setResponse(decryptedResponse).build();
+        return response;
+    }
+
+    protected POC.Response getAsymDecryptedResponse(POC.Response response) {
+        byte[] encryptedResponse = response.getResponse().toByteArray();
+        ByteString decryptedResponse = ByteString
+                .copyFrom(asymmetricEncryptionBox.decrypt(encryptedResponse));
         response = response.toBuilder().setResponse(decryptedResponse).build();
         return response;
     }
@@ -72,5 +72,37 @@ public abstract class AbstractCommunicator {
                 .copyFrom(asymmetricEncryptionBox.encrypt(encryptedResponse));
         response = response.toBuilder().setResponse(decryptedResponse).build();
         return response;
+    }
+
+    protected POC.Request getDecryptedRequest(POC.Request request) {
+        byte[] encryptedResponse = request.getMethodArgument().toByteArray();
+        ByteString decryptedResponse = ByteString
+                .copyFrom(symmetricEncryptionBox.decrypt(encryptedResponse));
+        request = request.toBuilder().setMethodArgument(decryptedResponse).build();
+        return request;
+    }
+
+    protected POC.Request getEncryptedRequest(POC.Request request) {
+        byte[] encryptedResponse = request.getMethodArgument().toByteArray();
+        ByteString decryptedResponse = ByteString
+                .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse));
+        request = request.toBuilder().setMethodArgument(decryptedResponse).build();
+        return request;
+    }
+
+    protected POC.Request getAsymDecryptedRequest(POC.Request request) {
+        byte[] encryptedResponse = request.getMethodArgument().toByteArray();
+        ByteString decryptedResponse = ByteString
+                .copyFrom(asymmetricEncryptionBox.decrypt(encryptedResponse));
+        request = request.toBuilder().setMethodArgument(decryptedResponse).build();
+        return request;
+    }
+
+    protected POC.Request getAsymEncryptedRequest(POC.Request request) {
+        byte[] encryptedResponse = request.getMethodArgument().toByteArray();
+        ByteString decryptedResponse = ByteString
+                .copyFrom(asymmetricEncryptionBox.encrypt(encryptedResponse));
+        request = request.toBuilder().setMethodArgument(decryptedResponse).build();
+        return request;
     }
 }

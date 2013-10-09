@@ -70,7 +70,18 @@ public class SocketServer extends Server {
                 p.addLast("handler", new SimpleChannelUpstreamHandler() {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
-                        final POC.Request request = (POC.Request) e.getMessage();
+                        POC.Request request = (POC.Request) e.getMessage();
+
+                        if (enableAsymmetricEncryption) {
+                            request = getAsymDecryptedRequest(request);
+                        }
+
+                        if (enableSymmetricEncryption) {
+                            request = getDecryptedRequest(request);
+                        }
+
+                        final POC.Request protoRequest = request;
+
                         RpcController dummyController = new DummyRpcController();
                         Service service = serviceMap.get(request.getServiceName());
 
@@ -91,7 +102,7 @@ public class SocketServer extends Server {
                                         .Response
                                         .newBuilder()
                                         .setResponse(parameter.toByteString())
-                                        .setRequestId(request.getRequestId())
+                                        .setRequestId(protoRequest.getRequestId())
                                         .build();
 
                                 //encryption

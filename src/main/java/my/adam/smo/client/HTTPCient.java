@@ -114,12 +114,21 @@ public class HTTPCient extends Client {
                 httpRequest.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
                 httpRequest.setHeader(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
 
-
-                byte[] arr = POC.Request.newBuilder().setServiceName(method.getService().getFullName())
+                POC.Request protoRequest = POC.Request.newBuilder().setServiceName(method.getService().getFullName())
                         .setMethodName(method.getName())
                         .setMethodArgument(request.toByteString())
                         .setRequestId(id)
-                        .build().toByteArray();
+                        .build();
+
+                if (enableSymmetricEncryption) {
+                    protoRequest = getEncryptedRequest(protoRequest);
+                }
+
+                if (enableAsymmetricEncryption) {
+                    protoRequest = getAsymEncryptedRequest(protoRequest);
+                }
+
+                byte[] arr = protoRequest.toByteArray();
 
                 ChannelBuffer s = Base64.encode(ChannelBuffers.copiedBuffer(arr), Base64Dialect.STANDARD);
 
