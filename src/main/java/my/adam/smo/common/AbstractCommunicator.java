@@ -1,7 +1,7 @@
 package my.adam.smo.common;
 
 import com.google.protobuf.ByteString;
-import my.adam.smo.POC;
+import my.adam.smo.RPCommunication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -42,7 +42,7 @@ public abstract class AbstractCommunicator {
     @Value("${enable_asymmetric_encryption:false}")
     protected boolean enableAsymmetricEncryption;
 
-    protected POC.Response getDecryptedResponse(POC.Response response) {
+    protected RPCommunication.Response getDecryptedResponse(RPCommunication.Response response) {
         byte[] encryptedResponse = response.getResponse().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(symmetricEncryptionBox.decrypt(encryptedResponse));
@@ -50,7 +50,7 @@ public abstract class AbstractCommunicator {
         return response;
     }
 
-    protected POC.Response getEncryptedResponse(POC.Response response) {
+    protected RPCommunication.Response getEncryptedResponse(RPCommunication.Response response) {
         byte[] encryptedResponse = response.getResponse().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse));
@@ -58,7 +58,7 @@ public abstract class AbstractCommunicator {
         return response;
     }
 
-    protected POC.Response getAsymDecryptedResponse(POC.Response response) {
+    protected RPCommunication.Response getAsymDecryptedResponse(RPCommunication.Response response) {
         byte[] encryptedResponse = response.getResponse().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(asymmetricEncryptionBox.decrypt(encryptedResponse));
@@ -66,7 +66,7 @@ public abstract class AbstractCommunicator {
         return response;
     }
 
-    protected POC.Response getAsymEncryptedResponse(POC.Response response) {
+    protected RPCommunication.Response getAsymEncryptedResponse(RPCommunication.Response response) {
         byte[] encryptedResponse = response.getResponse().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(asymmetricEncryptionBox.encrypt(encryptedResponse));
@@ -74,7 +74,7 @@ public abstract class AbstractCommunicator {
         return response;
     }
 
-    protected POC.Request getDecryptedRequest(POC.Request request) {
+    protected RPCommunication.Request getDecryptedRequest(RPCommunication.Request request) {
         byte[] encryptedResponse = request.getMethodArgument().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(symmetricEncryptionBox.decrypt(encryptedResponse));
@@ -82,7 +82,7 @@ public abstract class AbstractCommunicator {
         return request;
     }
 
-    protected POC.Request getEncryptedRequest(POC.Request request) {
+    protected RPCommunication.Request getEncryptedRequest(RPCommunication.Request request) {
         byte[] encryptedResponse = request.getMethodArgument().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse));
@@ -90,7 +90,7 @@ public abstract class AbstractCommunicator {
         return request;
     }
 
-    protected POC.Request getAsymDecryptedRequest(POC.Request request) {
+    protected RPCommunication.Request getAsymDecryptedRequest(RPCommunication.Request request) {
         byte[] encryptedResponse = request.getMethodArgument().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(asymmetricEncryptionBox.decrypt(encryptedResponse));
@@ -98,7 +98,7 @@ public abstract class AbstractCommunicator {
         return request;
     }
 
-    protected POC.Request getAsymEncryptedRequest(POC.Request request) {
+    protected RPCommunication.Request getAsymEncryptedRequest(RPCommunication.Request request) {
         byte[] encryptedResponse = request.getMethodArgument().toByteArray();
         ByteString decryptedResponse = ByteString
                 .copyFrom(asymmetricEncryptionBox.encrypt(encryptedResponse));

@@ -34,21 +34,3 @@ service AwsomeSearch {
 service NewUsefullService {
     rpc DoGoodJob (In) returns (Out);
 }
-
-//call transport layer
-message Request {
-    optional int64 requestId = 1;
-    optional string serviceName = 2;
-    optional string methodName = 3;
-    optional bytes methodArgument = 4;
-    //encrypted sha 256 sum of decoded message concatenated with random bytes used to decode message
-    optional bytes secret = 5;
-}
-
-message Response {
-    optional int64 requestId = 1;
-    optional bytes response = 2;
-    optional string exception = 3;
-    //encrypted sha 256 sum of decoded message concatenated with random bytes used to decode message
-    optional bytes secret = 4;
-}

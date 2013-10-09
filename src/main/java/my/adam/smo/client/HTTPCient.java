@@ -1,7 +1,7 @@
 package my.adam.smo.client;
 
 import com.google.protobuf.*;
-import my.adam.smo.POC;
+import my.adam.smo.RPCommunication;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -76,7 +76,7 @@ public class HTTPCient extends Client {
 
                         ChannelBuffer cb = Base64.decode(httpResponse.getContent(), Base64Dialect.STANDARD);
 
-                        POC.Response response = POC.Response.parseFrom(cb.copy(0, cb.readableBytes()).array());
+                        RPCommunication.Response response = RPCommunication.Response.parseFrom(cb.copy(0, cb.readableBytes()).array());
 
                         //encryption
                         if (enableAsymmetricEncryption) {
@@ -114,7 +114,7 @@ public class HTTPCient extends Client {
                 httpRequest.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
                 httpRequest.setHeader(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
 
-                POC.Request protoRequest = POC.Request.newBuilder().setServiceName(method.getService().getFullName())
+                RPCommunication.Request protoRequest = RPCommunication.Request.newBuilder().setServiceName(method.getService().getFullName())
                         .setMethodName(method.getName())
                         .setMethodArgument(request.toByteString())
                         .setRequestId(id)

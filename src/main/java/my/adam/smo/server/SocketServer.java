@@ -2,7 +2,7 @@ package my.adam.smo.server;
 
 import com.google.protobuf.*;
 import my.adam.smo.DummyRpcController;
-import my.adam.smo.POC;
+import my.adam.smo.RPCommunication;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
@@ -66,11 +66,11 @@ public class SocketServer extends Server {
                 p.addLast("protobufEncoder", new ProtobufEncoder());//DownstreamHandler
 
                 p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(MAX_FRAME_BYTES_LENGTH, 0, 4, 0, 4));//UpstreamHandler
-                p.addLast("protobufDecoder", new ProtobufDecoder(POC.Request.getDefaultInstance()));//UpstreamHandler
+                p.addLast("protobufDecoder", new ProtobufDecoder(RPCommunication.Request.getDefaultInstance()));//UpstreamHandler
                 p.addLast("handler", new SimpleChannelUpstreamHandler() {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
-                        POC.Request request = (POC.Request) e.getMessage();
+                        RPCommunication.Request request = (RPCommunication.Request) e.getMessage();
 
                         if (enableAsymmetricEncryption) {
                             request = getAsymDecryptedRequest(request);
@@ -80,7 +80,7 @@ public class SocketServer extends Server {
                             request = getDecryptedRequest(request);
                         }
 
-                        final POC.Request protoRequest = request;
+                        final RPCommunication.Request protoRequest = request;
 
                         RpcController dummyController = new DummyRpcController();
                         Service service = serviceMap.get(request.getServiceName());
@@ -98,7 +98,7 @@ public class SocketServer extends Server {
                         RpcCallback<Message> callback = new RpcCallback<Message>() {
                             @Override
                             public void run(Message parameter) {
-                                POC.Response response = POC
+                                RPCommunication.Response response = RPCommunication
                                         .Response
                                         .newBuilder()
                                         .setResponse(parameter.toByteString())

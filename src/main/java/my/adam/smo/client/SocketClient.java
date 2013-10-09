@@ -1,7 +1,7 @@
 package my.adam.smo.client;
 
 import com.google.protobuf.*;
-import my.adam.smo.POC;
+import my.adam.smo.RPCommunication;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -71,11 +71,11 @@ public class SocketClient extends Client {
                 p.addLast("protobufEncoder", new ProtobufEncoder());//DownstreamHandler
 
                 p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(MAX_FRAME_BYTES_LENGTH, 0, 4, 0, 4));//UpstreamHandler
-                p.addLast("protobufDecoder", new ProtobufDecoder(POC.Response.getDefaultInstance()));//UpstreamHandler
+                p.addLast("protobufDecoder", new ProtobufDecoder(RPCommunication.Response.getDefaultInstance()));//UpstreamHandler
                 p.addLast("handler", new SimpleChannelUpstreamHandler() {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-                        POC.Response response = (POC.Response) e.getMessage();
+                        RPCommunication.Response response = (RPCommunication.Response) e.getMessage();
 
                         //encryption
                         if (enableAsymmetricEncryption) {
@@ -130,7 +130,7 @@ public class SocketClient extends Client {
                     }
                 }
 
-                POC.Request protoRequest = POC.Request.newBuilder().setServiceName(method.getService().getFullName())
+                RPCommunication.Request protoRequest = RPCommunication.Request.newBuilder().setServiceName(method.getService().getFullName())
                         .setMethodName(method.getName())
                         .setMethodArgument(request.toByteString())
                         .setRequestId(id)

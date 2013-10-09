@@ -2,7 +2,7 @@ package my.adam.smo.server;
 
 import com.google.protobuf.*;
 import my.adam.smo.DummyRpcController;
-import my.adam.smo.POC;
+import my.adam.smo.RPCommunication;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -74,7 +74,7 @@ public class HTTPServer extends Server {
                         final DefaultHttpRequest httpRequest = (DefaultHttpRequest) e.getMessage();
                         ChannelBuffer cb = Base64.decode(httpRequest.getContent(), Base64Dialect.STANDARD);
 
-                        POC.Request request = POC.Request.parseFrom(cb.copy(0, cb.readableBytes()).array());
+                        RPCommunication.Request request = RPCommunication.Request.parseFrom(cb.copy(0, cb.readableBytes()).array());
 
                         if (enableAsymmetricEncryption) {
                             request = getAsymDecryptedRequest(request);
@@ -84,7 +84,7 @@ public class HTTPServer extends Server {
                             request = getDecryptedRequest(request);
                         }
 
-                        final POC.Request protoRequest = request;
+                        final RPCommunication.Request protoRequest = request;
 
                         RpcController dummyController = new DummyRpcController();
                         Service service = serviceMap.get(request.getServiceName());
@@ -104,7 +104,7 @@ public class HTTPServer extends Server {
                             public void run(Message parameter) {
                                 HttpResponse httpResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
 
-                                POC.Response response = POC.Response
+                                RPCommunication.Response response = RPCommunication.Response
                                         .newBuilder()
                                         .setResponse(parameter.toByteString())
                                         .setRequestId(protoRequest.getRequestId())

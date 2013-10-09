@@ -51,7 +51,7 @@
                 <artifactId>maven-protoc-plugin</artifactId>
                 <version>0.1.11-SNAPSHOT</version>
                 <configuration>
-                    <protocExecutable>${project.protoc.bin}}</protocExecutable>
+                    <protocExecutable>${project.protoc.bin}</protocExecutable>
                     <protoSourceRoot>
                         ${project.basedir}/src/main/resources/
                     </protoSourceRoot>
