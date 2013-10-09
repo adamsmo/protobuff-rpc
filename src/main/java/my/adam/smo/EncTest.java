@@ -2,18 +2,12 @@ package my.adam.smo;
 
 import my.adam.smo.common.AsymmetricEncryptionBox;
 import my.adam.smo.common.SymmetricEncryptionBox;
-import org.apache.shiro.codec.Base64;
-import org.apache.shiro.codec.CodecSupport;
-import org.apache.shiro.crypto.AesCipherService;
-import org.apache.shiro.crypto.OperationMode;
-import org.apache.shiro.util.ByteSource;
-import org.apache.shiro.util.SimpleByteSource;
+import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.security.Key;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -41,33 +35,10 @@ import java.util.Arrays;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public class ShiroTest {
-    private static Logger logger = LoggerFactory.getLogger(ShiroTest.class);
+public class EncTest {
+    private static Logger logger = LoggerFactory.getLogger(EncTest.class);
 
     public static void main(String[] args) {
-        String secret = "Tell nobody!";
-        AesCipherService cipher = new AesCipherService();
-        cipher.setMode(OperationMode.CTR);
-        cipher.setKeySize(128);
-
-        //generate key with default 128 bits size
-        Key key = cipher.generateNewKey(128);
-        byte[] keyBytes = key.getEncoded();
-
-        logger.debug("base64 key: \"" + Base64.encodeToString(keyBytes) + "\"");
-
-        //encrypt the secret
-        byte[] secretBytes = CodecSupport.toBytes(secret);
-        ByteSource encrypted = cipher.encrypt(secretBytes, keyBytes);
-
-        //decrypt the secret
-        byte[] encryptedBytes = encrypted.getBytes();
-        ByteSource decrypted = cipher.decrypt(encryptedBytes, keyBytes);
-        String secret2 = CodecSupport.toString(decrypted.getBytes());
-
-        //verify correctness
-        logger.debug(secret);
-        logger.debug(secret2);
 
         //another
         logger.debug("-----------------RSA-----------------");
@@ -82,8 +53,8 @@ public class ShiroTest {
             KeyPair kp = asb.generateKeyPair(2048);
 
             logger.debug("conf entries as below:");
-            logger.debug("prv=" + Base64.encodeToString(kp.getPrivate().getEncoded()));
-            logger.debug("pub=" + Base64.encodeToString(kp.getPublic().getEncoded()));
+            logger.debug("prv=" + new String(Base64.encode(kp.getPrivate().getEncoded())), "UTF-8");
+            logger.debug("pub=" + new String(Base64.encode(kp.getPublic().getEncoded())), "UTF-8");
 
             ala = asb.encrypt(kp.getPublic(), ala);
             ala = asb.decrypt(kp.getPrivate(), ala);
@@ -101,9 +72,9 @@ public class ShiroTest {
             logger.debug("enc dec is same with key from conf = " + Arrays.equals(ala, s.getBytes()));
 
             SymmetricEncryptionBox seb = ctx.getBean(SymmetricEncryptionBox.class);
-            ByteSource bs = new SimpleByteSource(s.getBytes());
+            byte[] bs = s.getBytes();
 
-            logger.debug("enc dec is same with key from conf = " + Arrays.equals(bs.getBytes(), seb.decrypt(seb.encrypt(bs.getBytes()))));
+            logger.debug("enc dec is same with key from conf = " + Arrays.equals(bs, seb.decrypt(seb.encrypt(bs))));
 
 
         } catch (NoSuchAlgorithmException e) {

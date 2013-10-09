@@ -1,16 +1,17 @@
 package my.adam.smo.common;
 
-import org.apache.shiro.codec.Base64;
-import org.apache.shiro.crypto.AesCipherService;
-import org.apache.shiro.crypto.OperationMode;
-import org.apache.shiro.crypto.SecureRandomNumberGenerator;
-import org.apache.shiro.util.SimpleByteSource;
+import org.bouncycastle.crypto.CipherParameters;
+import org.bouncycastle.crypto.engines.AESEngine;
+import org.bouncycastle.crypto.generators.OpenSSLPBEParametersGenerator;
+import org.bouncycastle.crypto.modes.CBCBlockCipher;
+import org.bouncycastle.crypto.paddings.PKCS7Padding;
+import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
-import java.security.Key;
-import java.util.Date;
+import javax.annotation.PostConstruct;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * The MIT License
@@ -37,40 +38,35 @@ import java.util.Date;
  */
 @Component
 public class SymmetricEncryptionBox {
-
-    private AesCipherService cipher;
+    private CipherParameters cp;
 
     @Value("${cipher_key: }")
     private String key;
 
-    private SecureRandomNumberGenerator randomGenerator = new SecureRandomNumberGenerator();
-
-    @Inject
-    public SymmetricEncryptionBox(@Value("${aes_key_length:128}") int keyLength) {
-        randomGenerator.setSeed(String.valueOf(new Date().getTime()).getBytes());
-        cipher = new AesCipherService();
-        cipher.setMode(OperationMode.CTR);
-        cipher.setKeySize(keyLength);
-    }
-
-    public byte[] getKey(int length) {
-        Key key = cipher.generateNewKey(128);
-        return key.getEncoded();
-    }
-
-    public byte[] encrypt(byte[] key, byte[] plainText) {
-        return new SimpleByteSource(cipher.encrypt(plainText, key)).getBytes();
-    }
-
-    public byte[] decrypt(byte[] key, byte[] encrypted) {
-        return new SimpleByteSource(cipher.decrypt(encrypted, key)).getBytes();
+    @PostConstruct
+    public void init() throws NoSuchAlgorithmException {
+        OpenSSLPBEParametersGenerator gen = new OpenSSLPBEParametersGenerator();
+        gen.init(key.getBytes(), Base64.decode(key));
+        cp = gen.generateDerivedParameters(256, 128);
     }
 
     public byte[] encrypt(byte[] plainTextKey) {
-        return encrypt(Base64.decode(key), plainTextKey);
+        byte[] out = plainTextKey.clone();
+        PaddedBufferedBlockCipher encCipher;
+        encCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(
+                new AESEngine()), new PKCS7Padding());
+        encCipher.init(true, cp);
+        encCipher.processBytes(plainTextKey, 0, plainTextKey.length, out, 0);
+        return out;
     }
 
     public byte[] decrypt(byte[] encryptedKey) {
-        return decrypt(Base64.decode(key), encryptedKey);
+        byte[] out = encryptedKey.clone();
+        PaddedBufferedBlockCipher descCipher;
+        descCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(
+                new AESEngine()), new PKCS7Padding());
+        descCipher.init(false, cp);
+        descCipher.processBytes(encryptedKey, 0, encryptedKey.length, out, 0);
+        return out;
     }
 }

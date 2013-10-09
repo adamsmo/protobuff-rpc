@@ -1,6 +1,6 @@
 package my.adam.smo.common;
 
-import org.apache.shiro.codec.Base64;
+import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
