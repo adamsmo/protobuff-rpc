@@ -1,3 +1,23 @@
+import com.google.protobuf.*;
+import junit.framework.Assert;
+import my.adam.smo.DummyRpcController;
+import my.adam.smo.TestServices;
+import my.adam.smo.client.HTTPClient;
+import my.adam.smo.client.SocketClient;
+import my.adam.smo.server.HTTPServer;
+import my.adam.smo.server.SocketServer;
+import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.logging.Slf4JLoggerFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.net.InetSocketAddress;
+
 /**
  * The MIT License
  * <p/>
@@ -23,5 +43,87 @@
  */
 public class ServerCorrectnesTest {
 
+    private RpcChannel httpChannel;
+    private BlockingRpcChannel httpBlockingChannel;
+    private RpcChannel socketChannel;
+    private BlockingRpcChannel socketBlockingChannel;
 
+    private final int result = 2;
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Before
+    public void init() {
+
+        InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
+
+        ApplicationContext clientContext = new ClassPathXmlApplicationContext("Context.xml");
+        ApplicationContext serverContext = new ClassPathXmlApplicationContext("Context.xml");
+
+        HTTPServer httpServer = serverContext.getBean(HTTPServer.class);
+        SocketServer socketServer = serverContext.getBean(SocketServer.class);
+        HTTPClient httpClient = clientContext.getBean(HTTPClient.class);
+        SocketClient socketClient = clientContext.getBean(SocketClient.class);
+
+        final TestServices.Out out = TestServices.Out.newBuilder().setResult(result).build();
+
+        Service service = TestServices.NewUsefullTestService.newReflectiveService(new TestServices.NewUsefullTestService.Interface() {
+            @Override
+            public void doGoodJob(RpcController controller, TestServices.In request, RpcCallback<TestServices.Out> done) {
+                done.run(out);
+            }
+        });
+
+        httpServer.register(service);
+        socketServer.register(service);
+
+        httpServer.start(new InetSocketAddress(8081));
+        socketServer.start(new InetSocketAddress(8091));
+
+        httpChannel = httpClient.connect(new InetSocketAddress(8081));
+        httpBlockingChannel = httpClient.blockingConnect(new InetSocketAddress(8081));
+        socketChannel = socketClient.connect(new InetSocketAddress(8091));
+        socketBlockingChannel = socketClient.blockingConnect(new InetSocketAddress(8091));
+    }
+
+    @After
+    public void tearDown() {
+
+    }
+
+    @Test
+    public void test() {
+        int arg1 = 1;
+        int arg2 = 2;
+
+        TestServices.NewUsefullTestService httpService = TestServices.NewUsefullTestService.newStub(httpChannel);
+        TestServices.NewUsefullTestService socketService = TestServices.NewUsefullTestService.newStub(socketChannel);
+
+        TestServices.NewUsefullTestService.BlockingInterface httpBlockingService = TestServices.NewUsefullTestService.newBlockingStub(httpBlockingChannel);
+        TestServices.NewUsefullTestService.BlockingInterface socketBlockingService = TestServices.NewUsefullTestService.newBlockingStub(socketBlockingChannel);
+
+        TestServices.In in = TestServices.In.newBuilder().setOperand1(arg1).setOperand2(arg2).build();
+
+        httpService.doGoodJob(new DummyRpcController(), in, new RpcCallback<TestServices.Out>() {
+            @Override
+            public void run(TestServices.Out parameter) {
+                Assert.assertEquals(result, parameter.getResult());
+            }
+        });
+
+        socketService.doGoodJob(new DummyRpcController(), in, new RpcCallback<TestServices.Out>() {
+            @Override
+            public void run(TestServices.Out parameter) {
+                Assert.assertEquals(result, parameter.getResult());
+            }
+        });
+
+        try {
+            Assert.assertEquals(result, httpBlockingService.doGoodJob(new DummyRpcController(), in).getResult());
+            Assert.assertEquals(result, socketBlockingService.doGoodJob(new DummyRpcController(), in).getResult());
+        } catch (ServiceException e) {
+            logger.error("err", e);
+            Assert.fail("call failed");
+        }
+    }
 }

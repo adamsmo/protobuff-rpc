@@ -44,14 +44,14 @@ import java.util.concurrent.Executors;
  * THE SOFTWARE.
  */
 @Component
-public class HTTPCient extends Client {
+public class HTTPClient extends Client {
     private static final int MAX_CONTENT_LENGTH = Integer.MAX_VALUE;
 
     @InjectLogger
     private Logger logger;
 
     @Inject
-    public HTTPCient(@Value("${client_worker_threads}") int workerThreads) {
+    public HTTPClient(@Value("${client_worker_threads}") int workerThreads) {
         bootstrap.setFactory(new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool(), workerThreads));

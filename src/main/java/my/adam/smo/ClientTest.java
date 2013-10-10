@@ -4,7 +4,7 @@ import com.google.protobuf.BlockingRpcChannel;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.ServiceException;
-import my.adam.smo.client.HTTPCient;
+import my.adam.smo.client.HTTPClient;
 import my.adam.smo.client.SocketClient;
 import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Slf4JLoggerFactory;
@@ -47,7 +47,7 @@ public class ClientTest {
 
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("Context.xml");
         SocketClient c = applicationContext.getBean(SocketClient.class);
-        HTTPCient hc = applicationContext.getBean(HTTPCient.class);
+        HTTPClient hc = applicationContext.getBean(HTTPClient.class);
 
         RpcChannel rpcChannel = hc.connect(new InetSocketAddress("localhost", 8090));
 

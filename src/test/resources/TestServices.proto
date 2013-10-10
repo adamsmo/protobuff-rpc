@@ -1,0 +1,20 @@
+option java_package = "my.adam.smo";
+
+option java_outer_classname = "TestServices";
+
+option java_generic_services = true;
+
+option optimize_for = SPEED;
+
+message In {
+    required int32 operand1 = 1;
+    required int32 operand2 = 2;
+}
+
+message Out {
+    required int32 result = 1;
+}
+
+service NewUsefullTestService {
+    rpc DoGoodJob (In) returns (Out);
+}

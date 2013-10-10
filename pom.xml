@@ -32,6 +32,7 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>add-src</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>add-source</goal>
@@ -39,6 +40,18 @@
                         <configuration>
                             <sources>
                                 <source>src/main/generated</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-src-test</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/test/generated</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -52,19 +65,35 @@
                 <version>0.1.11-SNAPSHOT</version>
                 <configuration>
                     <protocExecutable>${project.protoc.bin}</protocExecutable>
-                    <protoSourceRoot>
-                        ${project.basedir}/src/main/resources/
-                    </protoSourceRoot>
-                    <outputDirectory>
-                        ${project.basedir}/src/main/generated/
-                    </outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
+                        <id>proto-compile</id>
                         <goals>
                             <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <protoSourceRoot>
+                                ${project.basedir}/src/main/resources/
+                            </protoSourceRoot>
+                            <outputDirectory>
+                                ${project.basedir}/src/main/generated/
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>proto-compile-test</id>
+                        <goals>
                             <goal>testCompile</goal>
                         </goals>
+                        <configuration>
+                            <protoTestSourceRoot>
+                                ${project.basedir}/src/test/resources/
+                            </protoTestSourceRoot>
+                            <outputDirectory>
+                                ${project.basedir}/src/test/generated/
+                            </outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
