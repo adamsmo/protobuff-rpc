@@ -5,11 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import sun.security.rsa.RSAPrivateCrtKeyImpl;
-import sun.security.rsa.RSAPublicKeyImpl;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 /**
  * The MIT License
@@ -39,14 +41,33 @@ public class AsymmetricEncryptionBox {
 
     private KeyPairGenerator keyGen;
     @Value("${pub: }")
-    private String pubKey;
+    private String pubKeyS;
     @Value("${prv: }")
-    private String privKey;
+    private String privKeyS;
 
     private Logger logger = LoggerFactory.getLogger(getClass());
+    private PrivateKey prvKey;
+    private PublicKey pubKey;
 
-    public AsymmetricEncryptionBox() throws NoSuchAlgorithmException {
+    @PostConstruct
+    public void init() throws NoSuchAlgorithmException {
         keyGen = KeyPairGenerator.getInstance("RSA");
+
+        try {
+            PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(Base64.decode(this.privKeyS));
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            prvKey = keyFactory.generatePrivate(privKeySpec);
+        } catch (InvalidKeySpecException e) {
+            logger.error("invalid private key", e);
+        }
+
+        try {
+            X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(Base64.decode(this.pubKeyS));
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            pubKey = keyFactory.generatePublic(pubKeySpec);
+        } catch (InvalidKeySpecException e) {
+            logger.error("invalid public key", e);
+        }
     }
 
     /**
@@ -56,13 +77,6 @@ public class AsymmetricEncryptionBox {
      * @return
      */
     public byte[] decrypt(byte[] cryptogram) {
-        PrivateKey prvKey;
-        try {
-            prvKey = RSAPrivateCrtKeyImpl.newKey(Base64.decode(this.privKey));
-        } catch (InvalidKeyException e) {
-            logger.error("invalid key", e);
-            return null;
-        }
         return decrypt(prvKey, cryptogram);
     }
 
@@ -73,13 +87,6 @@ public class AsymmetricEncryptionBox {
      * @return
      */
     public byte[] encrypt(byte[] plaintext) {
-        PublicKey pubKey;
-        try {
-            pubKey = new RSAPublicKeyImpl(Base64.decode(this.pubKey));
-        } catch (InvalidKeyException e) {
-            logger.error("invalid key", e);
-            return null;
-        }
         return encrypt(pubKey, plaintext);
     }
 

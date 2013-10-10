@@ -17,6 +17,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The MIT License
@@ -43,6 +45,7 @@ import java.net.InetSocketAddress;
  */
 public class ServerCorrectnesTest {
 
+    private static final int ARBITRARY_CONSTANT = 99999;
     private RpcChannel httpChannel;
     private BlockingRpcChannel httpBlockingChannel;
     private RpcChannel socketChannel;
@@ -104,19 +107,34 @@ public class ServerCorrectnesTest {
 
         TestServices.In in = TestServices.In.newBuilder().setOperand1(arg1).setOperand2(arg2).build();
 
+        final CountDownLatch callbackLatch =
+                new CountDownLatch(ARBITRARY_CONSTANT);
+
         httpService.doGoodJob(new DummyRpcController(), in, new RpcCallback<TestServices.Out>() {
             @Override
             public void run(TestServices.Out parameter) {
                 Assert.assertEquals(result, parameter.getResult());
+                callbackLatch.countDown();
             }
         });
+        try {
+            callbackLatch.await(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Assert.fail("call timed out");
+        }
 
         socketService.doGoodJob(new DummyRpcController(), in, new RpcCallback<TestServices.Out>() {
             @Override
             public void run(TestServices.Out parameter) {
                 Assert.assertEquals(result, parameter.getResult());
+                callbackLatch.countDown();
             }
         });
+        try {
+            callbackLatch.await(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Assert.fail("call timed out");
+        }
 
         try {
             Assert.assertEquals(result, httpBlockingService.doGoodJob(new DummyRpcController(), in).getResult());
