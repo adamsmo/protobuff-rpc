@@ -2,16 +2,24 @@ package my.adam.smo.common;
 
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.engines.AESEngine;
+import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.generators.OpenSSLPBEParametersGenerator;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
+import org.bouncycastle.crypto.paddings.ISO7816d4Padding;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.util.encoders.Base64;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Arrays;
 
 /**
  * The MIT License
@@ -38,35 +46,83 @@ import java.security.NoSuchAlgorithmException;
  */
 @Component
 public class SymmetricEncryptionBox {
-    private CipherParameters cp;
+    //    private CipherParameters cp;
+    private SecureRandom secureRandom;
+    private MessageDigest md;
+
+    public static final int ivLength = 16;
+    //must be at least long enough that after adding it to message, message will be at least 17 bytes long
+    private final int seedLength = 16;
 
     @Value("${cipher_key: }")
     private String key;
 
+    @InjectLogger
+    private Logger logger;
+
     @PostConstruct
     public void init() throws NoSuchAlgorithmException {
+        secureRandom = new SecureRandom(key.getBytes());
+        md = MessageDigest.getInstance("SHA-256");
+
         OpenSSLPBEParametersGenerator gen = new OpenSSLPBEParametersGenerator();
         gen.init(key.getBytes(), Base64.decode(key));
-        cp = gen.generateDerivedParameters(256, 128);
     }
 
     public byte[] encrypt(byte[] plainTextKey) {
-        byte[] out = plainTextKey.clone();
+        byte[] seed = new byte[seedLength];
+        secureRandom.nextBytes(seed);
+        byte[] seededPlainTextKey = addSeedToMessage(plainTextKey, seed);
+
+        byte[] out = seededPlainTextKey.clone();
+
+        byte[] iv = new byte[ivLength];
+        secureRandom.nextBytes(iv);
+
+        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key.getBytes())), iv);
+
         PaddedBufferedBlockCipher encCipher;
         encCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(
-                new AESEngine()), new PKCS7Padding());
+                new AESFastEngine()), new ISO7816d4Padding());
         encCipher.init(true, cp);
-        encCipher.processBytes(plainTextKey, 0, plainTextKey.length, out, 0);
-        return out;
+
+
+        encCipher.processBytes(seededPlainTextKey, 0, seededPlainTextKey.length, out, 0);
+        return appendIV(out, iv);
     }
 
     public byte[] decrypt(byte[] encryptedKey) {
-        byte[] out = encryptedKey.clone();
+        byte[] out = Arrays.copyOfRange(encryptedKey, ivLength, encryptedKey.length);
+
+        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key.getBytes())), getIV(encryptedKey));
+
         PaddedBufferedBlockCipher descCipher;
         descCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(
                 new AESEngine()), new PKCS7Padding());
         descCipher.init(false, cp);
-        descCipher.processBytes(encryptedKey, 0, encryptedKey.length, out, 0);
-        return out;
+        descCipher.processBytes(encryptedKey, ivLength, encryptedKey.length - ivLength, out, 0);
+        return getMessageWithoutSeed(out);
+    }
+
+    public byte[] getIV(byte[] cryptogram) {
+        return Arrays.copyOfRange(cryptogram, 0, ivLength);
+    }
+
+    public byte[] appendIV(byte[] cryptogram, byte[] iv) {
+        byte[] result = new byte[ivLength + cryptogram.length];
+        System.arraycopy(iv, 0, result, 0, ivLength);
+        System.arraycopy(cryptogram, 0, result, ivLength, cryptogram.length);
+        return result;
+    }
+
+    public byte[] addSeedToMessage(byte[] cryptogram, byte[] seed) {
+        byte[] result = new byte[seedLength + cryptogram.length];
+        System.arraycopy(seed, 0, result, 0, seedLength);
+        System.arraycopy(cryptogram, 0, result, seedLength, cryptogram.length);
+        return result;
+    }
+
+    public byte[] getMessageWithoutSeed(byte[] cryptogram) {
+        return Arrays.copyOfRange(cryptogram, seedLength, cryptogram.length);
     }
 }
