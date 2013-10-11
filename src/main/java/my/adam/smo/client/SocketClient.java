@@ -76,14 +76,17 @@ public class SocketClient extends Client {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
                         RPCommunication.Response response = (RPCommunication.Response) e.getMessage();
+                        logger.trace("received response:" + response);
 
                         //encryption
                         if (enableAsymmetricEncryption) {
                             response = getAsymDecryptedResponse(response);
+                            logger.trace("asymmetric encryption enabled, encrypted request: " + response.toString());
                         }
 
                         if (enableSymmetricEncryption) {
                             response = getDecryptedResponse(response);
+                            logger.trace("symmetric encryption enabled, encrypted request: " + response.toString());
                         }
 
                         Message m = descriptorProtoMap.remove(response.getRequestId())
@@ -153,7 +156,7 @@ public class SocketClient extends Client {
 
                 c.write(protoRequest);
 
-                logger.trace("request sent: " + request.toString());
+                logger.trace("request sent: " + protoRequest.toString());
 
                 callbackMap.put(id, done);
                 descriptorProtoMap.put(id, responsePrototype);
