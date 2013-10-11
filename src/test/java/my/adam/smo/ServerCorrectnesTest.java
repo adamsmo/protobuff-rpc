@@ -1,6 +1,7 @@
+package my.adam.smo;
+
 import com.google.protobuf.*;
 import junit.framework.Assert;
-import my.adam.smo.TestServices;
 import my.adam.smo.client.HTTPClient;
 import my.adam.smo.client.SocketClient;
 import my.adam.smo.common.DummyRpcController;

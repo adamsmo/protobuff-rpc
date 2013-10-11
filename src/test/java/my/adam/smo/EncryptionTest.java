@@ -1,3 +1,5 @@
+package my.adam.smo;
+
 import junit.framework.Assert;
 import my.adam.smo.common.SymmetricEncryptionBox;
 import org.junit.Test;
