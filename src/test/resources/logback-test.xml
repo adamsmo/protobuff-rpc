@@ -9,10 +9,6 @@
         <target>System.out</target>
     </appender>
 
-    <root level="WARN">
-        <appender-ref ref="STDOUT"/>
-    </root>
-
     <logger name="my.adam.smo" level="trace">
         <appender-ref ref="STDOUT"/>
     </logger>

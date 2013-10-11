@@ -6,7 +6,7 @@ import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +50,7 @@ public abstract class Client extends AbstractCommunicator {
     protected ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();
     protected ConcurrentHashMap<Long, Message> descriptorProtoMap = new ConcurrentHashMap<Long, Message>();
 
-    public BlockingRpcChannel blockingConnect(final SocketAddress sa) {
+    public BlockingRpcChannel blockingConnect(final InetSocketAddress sa) {
         return new BlockingRpcChannel() {
             private int ARBITRARY_CONSTANT = 1;
             private final CountDownLatch callbackLatch =
@@ -85,7 +85,7 @@ public abstract class Client extends AbstractCommunicator {
         bootstrap.releaseExternalResources();
     }
 
-    public abstract RpcChannel connect(final SocketAddress sa);
+    public abstract RpcChannel connect(final InetSocketAddress sa);
 
     public abstract Logger getLogger();
 }

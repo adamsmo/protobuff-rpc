@@ -1,9 +1,9 @@
 import com.google.protobuf.*;
 import junit.framework.Assert;
-import my.adam.smo.DummyRpcController;
 import my.adam.smo.TestServices;
 import my.adam.smo.client.HTTPClient;
 import my.adam.smo.client.SocketClient;
+import my.adam.smo.common.DummyRpcController;
 import my.adam.smo.server.HTTPServer;
 import my.adam.smo.server.SocketServer;
 import org.jboss.netty.logging.InternalLoggerFactory;

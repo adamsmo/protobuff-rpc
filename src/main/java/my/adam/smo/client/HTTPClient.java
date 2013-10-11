@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
 /**
@@ -100,7 +100,7 @@ public class HTTPClient extends Client {
     }
 
     @Override
-    public RpcChannel connect(final SocketAddress sa) {
+    public RpcChannel connect(final InetSocketAddress sa) {
         RpcChannel rpcChannel = new RpcChannel() {
             private Channel c = bootstrap.connect(sa).awaitUninterruptibly().getChannel();
 
@@ -108,8 +108,10 @@ public class HTTPClient extends Client {
             public void callMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype, RpcCallback<Message> done) {
                 long id = seqNum.addAndGet(1);
 
+                logger.trace("calling method: " + method);
+
                 HttpRequest httpRequest = new DefaultHttpRequest(
-                        HttpVersion.HTTP_1_1, HttpMethod.POST, "http://localhost:8090");
+                        HttpVersion.HTTP_1_1, HttpMethod.POST, "http://" + sa.getHostName() + ":" + sa.getPort());
                 httpRequest.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
                 httpRequest.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
                 httpRequest.setHeader(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
@@ -120,12 +122,16 @@ public class HTTPClient extends Client {
                         .setRequestId(id)
                         .build();
 
+                logger.trace("request built: " + request.toString());
+
                 if (enableSymmetricEncryption) {
                     protoRequest = getEncryptedRequest(protoRequest);
+                    logger.trace("symmetric encryption enabled, encrypted request: " + protoRequest.toString());
                 }
 
                 if (enableAsymmetricEncryption) {
                     protoRequest = getAsymEncryptedRequest(protoRequest);
+                    logger.trace("asymmetric encryption enabled, encrypted request: " + protoRequest.toString());
                 }
 
                 byte[] arr = protoRequest.toByteArray();
@@ -139,6 +145,8 @@ public class HTTPClient extends Client {
                 httpRequest.setChunked(false);
 
                 c.write(httpRequest);
+
+                logger.trace("request sent: " + request.toString());
 
                 callbackMap.put(id, done);
                 descriptorProtoMap.put(id, responsePrototype);

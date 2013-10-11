@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.net.ConnectException;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.Executors;
 
@@ -109,7 +109,7 @@ public class SocketClient extends Client {
     }
 
     @Override
-    public RpcChannel connect(final SocketAddress sa) {
+    public RpcChannel connect(final InetSocketAddress sa) {
         RpcChannel rpcChannel = new RpcChannel() {
             private Channel c = bootstrap.connect(sa).awaitUninterruptibly().getChannel();
 
@@ -117,9 +117,12 @@ public class SocketClient extends Client {
             public void callMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype, RpcCallback<Message> done) {
                 long id = seqNum.addAndGet(1);
 
+                logger.trace("calling method: " + method);
+
                 //infinit reconnection loop
                 while (reconnect && !c.isOpen()) {
                     logger.debug("channel closed " + sa);
+                    logger.debug("trying to reconnect");
                     c.disconnect().awaitUninterruptibly();
                     c.unbind().awaitUninterruptibly();
                     c = bootstrap.connect(sa).awaitUninterruptibly().getChannel();
@@ -136,15 +139,22 @@ public class SocketClient extends Client {
                         .setRequestId(id)
                         .build();
 
+                logger.trace("request built: " + request.toString());
+
                 if (enableSymmetricEncryption) {
                     protoRequest = getEncryptedRequest(protoRequest);
+                    logger.trace("symmetric encryption enabled, encrypted request: " + protoRequest.toString());
                 }
 
                 if (enableAsymmetricEncryption) {
                     protoRequest = getAsymEncryptedRequest(protoRequest);
+                    logger.trace("asymmetric encryption enabled, encrypted request: " + protoRequest.toString());
                 }
 
                 c.write(protoRequest);
+
+                logger.trace("request sent: " + request.toString());
+
                 callbackMap.put(id, done);
                 descriptorProtoMap.put(id, responsePrototype);
             }

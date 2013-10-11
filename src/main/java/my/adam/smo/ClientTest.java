@@ -6,6 +6,7 @@ import com.google.protobuf.RpcChannel;
 import com.google.protobuf.ServiceException;
 import my.adam.smo.client.HTTPClient;
 import my.adam.smo.client.SocketClient;
+import my.adam.smo.common.DummyRpcController;
 import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package my.adam.smo;
+package my.adam.smo.common;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;

@@ -1,8 +1,8 @@
 package my.adam.smo.server;
 
 import com.google.protobuf.*;
-import my.adam.smo.DummyRpcController;
 import my.adam.smo.RPCommunication;
+import my.adam.smo.common.DummyRpcController;
 import my.adam.smo.common.InjectLogger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
