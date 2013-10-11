@@ -110,7 +110,7 @@ public class SocketClient extends Client {
 
     @Override
     public RpcChannel connect(final SocketAddress sa) {
-        return new RpcChannel() {
+        RpcChannel rpcChannel = new RpcChannel() {
             private Channel c = bootstrap.connect(sa).awaitUninterruptibly().getChannel();
 
             @Override
@@ -149,6 +149,8 @@ public class SocketClient extends Client {
                 descriptorProtoMap.put(id, responsePrototype);
             }
         };
+        logger.trace("connected to address: " + sa.toString());
+        return rpcChannel;
     }
 
     @Override

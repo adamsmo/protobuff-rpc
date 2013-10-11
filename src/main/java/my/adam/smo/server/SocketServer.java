@@ -71,13 +71,16 @@ public class SocketServer extends Server {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
                         RPCommunication.Request request = (RPCommunication.Request) e.getMessage();
+                        logger.trace("received request:" + request.toString());
 
                         if (enableAsymmetricEncryption) {
                             request = getAsymDecryptedRequest(request);
+                            logger.trace("asymmetric encryption enabled, decrypted request: " + request.toString());
                         }
 
                         if (enableSymmetricEncryption) {
                             request = getDecryptedRequest(request);
+                            logger.trace("symmetric encryption enabled, decrypted request: " + request.toString());
                         }
 
                         final RPCommunication.Request protoRequest = request;
@@ -85,15 +88,21 @@ public class SocketServer extends Server {
                         RpcController dummyController = new DummyRpcController();
                         Service service = serviceMap.get(request.getServiceName());
 
+                        logger.trace("got service: " + service + " for name " + request.getServiceName());
+
                         Descriptors.MethodDescriptor methodToCall = service
                                 .getDescriptorForType()
                                 .findMethodByName(request.getMethodName());
+
+                        logger.trace("got method: " + methodToCall + " for name " + request.getMethodName());
 
                         Message methodArguments = service
                                 .getRequestPrototype(methodToCall)
                                 .newBuilderForType()
                                 .mergeFrom(request.getMethodArgument())
                                 .build();
+
+                        logger.trace("get method arguments from request " + methodArguments.toString());
 
                         RpcCallback<Message> callback = new RpcCallback<Message>() {
                             @Override
@@ -108,14 +117,16 @@ public class SocketServer extends Server {
                                 //encryption
                                 if (enableSymmetricEncryption) {
                                     response = getEncryptedResponse(response);
+                                    logger.trace("symmetric encryption enabled, encrypted response: " + response.toString());
                                 }
 
                                 if (enableAsymmetricEncryption) {
                                     response = getAsymEncryptedResponse(response);
+                                    logger.trace("asymmetric encryption enabled, encrypted response: " + response.toString());
                                 }
 
                                 e.getChannel().write(response);
-                                logger.debug("finishing call, response sended");
+                                logger.debug("finishing call, response sent");
                             }
                         };
                         logger.debug("calling " + methodToCall.getFullName());

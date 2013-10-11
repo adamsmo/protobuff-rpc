@@ -40,6 +40,7 @@ public abstract class Server extends AbstractCommunicator {
     public void start(SocketAddress sa) {
         try {
             bootstrap.bind(sa);
+            getLogger().trace("server started on " + sa.toString());
         } catch (ChannelException e) {
             getLogger().error("error while starting server ", e);
         }
@@ -47,10 +48,13 @@ public abstract class Server extends AbstractCommunicator {
 
     public void stop() {
         bootstrap.releaseExternalResources();
+        getLogger().debug("server stoped");
     }
 
     public void register(Service service) {
         serviceMap.put(service.getDescriptorForType().getFullName(), service);
+        getLogger().trace("service " + service.getClass().toString()
+                + " registered with name " + service.getDescriptorForType().getFullName());
     }
 
     public abstract Logger getLogger();

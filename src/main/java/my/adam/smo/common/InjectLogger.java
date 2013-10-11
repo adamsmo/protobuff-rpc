@@ -30,5 +30,9 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
+/**
+ * logger is injected after construction of object so its not usable in constructor at construction time,
+ * and will cause null pointer exception if used there
+ */
 public @interface InjectLogger {
 }

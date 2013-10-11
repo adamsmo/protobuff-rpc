@@ -75,13 +75,16 @@ public class HTTPServer extends Server {
                         ChannelBuffer cb = Base64.decode(httpRequest.getContent(), Base64Dialect.STANDARD);
 
                         RPCommunication.Request request = RPCommunication.Request.parseFrom(cb.copy(0, cb.readableBytes()).array());
+                        logger.trace("received request:" + request.toString());
 
                         if (enableAsymmetricEncryption) {
                             request = getAsymDecryptedRequest(request);
+                            logger.trace("asymmetric encryption enabled, decrypted request: " + request.toString());
                         }
 
                         if (enableSymmetricEncryption) {
                             request = getDecryptedRequest(request);
+                            logger.trace("symmetric encryption enabled, decrypted request: " + request.toString());
                         }
 
                         final RPCommunication.Request protoRequest = request;
@@ -89,15 +92,21 @@ public class HTTPServer extends Server {
                         RpcController dummyController = new DummyRpcController();
                         Service service = serviceMap.get(request.getServiceName());
 
+                        logger.trace("got service: " + service + " for name " + request.getServiceName());
+
                         Descriptors.MethodDescriptor methodToCall = service
                                 .getDescriptorForType()
                                 .findMethodByName(request.getMethodName());
+
+                        logger.trace("got method: " + methodToCall + " for name " + request.getMethodName());
 
                         Message methodArguments = service
                                 .getRequestPrototype(methodToCall)
                                 .newBuilderForType()
                                 .mergeFrom(request.getMethodArgument())
                                 .build();
+
+                        logger.trace("get method arguments from request " + methodArguments.toString());
 
                         RpcCallback<Message> callback = new RpcCallback<Message>() {
                             @Override
@@ -112,10 +121,12 @@ public class HTTPServer extends Server {
 
                                 if (enableSymmetricEncryption) {
                                     response = getEncryptedResponse(response);
+                                    logger.trace("symmetric encryption enabled, encrypted response: " + response.toString());
                                 }
 
                                 if (enableAsymmetricEncryption) {
                                     response = getAsymEncryptedResponse(response);
+                                    logger.trace("asymmetric encryption enabled, encrypted response: " + response.toString());
                                 }
 
                                 byte[] arr = response.toByteArray();
@@ -126,7 +137,7 @@ public class HTTPServer extends Server {
                                 httpResponse.addHeader(HttpHeaders.Names.CONTENT_LENGTH, resp.readableBytes());
 
                                 e.getChannel().write(httpResponse);
-                                logger.debug("finishing call, httpResponse sended");
+                                logger.debug("finishing call, httpResponse sent");
                             }
                         };
                         logger.debug("calling " + methodToCall.getFullName());

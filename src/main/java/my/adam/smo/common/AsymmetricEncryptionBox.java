@@ -91,7 +91,6 @@ public class AsymmetricEncryptionBox {
     }
 
     public byte[] decrypt(PrivateKey prvKey, byte[] cryptogram) {
-        logger.debug("key class " + prvKey.getClass().getName());
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, prvKey);
@@ -102,7 +101,6 @@ public class AsymmetricEncryptionBox {
     }
 
     public byte[] encrypt(PublicKey pubKey, byte[] plaintext) {
-        logger.debug("key class " + pubKey.getClass().getName());
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, pubKey);
