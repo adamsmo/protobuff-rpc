@@ -117,7 +117,7 @@ public class SocketClient extends Client {
             public void callMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype, RpcCallback<Message> done) {
                 long id = seqNum.addAndGet(1);
 
-                logger.trace("calling method: " + method);
+                logger.trace("calling method: " + method.getFullName());
 
                 //infinit reconnection loop
                 while (reconnect && !c.isOpen()) {

@@ -108,7 +108,7 @@ public class HTTPClient extends Client {
             public void callMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype, RpcCallback<Message> done) {
                 long id = seqNum.addAndGet(1);
 
-                logger.trace("calling method: " + method);
+                logger.trace("calling method: " + method.getFullName());
 
                 HttpRequest httpRequest = new DefaultHttpRequest(
                         HttpVersion.HTTP_1_1, HttpMethod.POST, "http://" + sa.getHostName() + ":" + sa.getPort());
