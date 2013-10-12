@@ -30,6 +30,10 @@ import javax.annotation.PostConstruct;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+/**
+ * example service class that automatically registers services with all autowired servers
+ */
 public abstract class AbstractServiceImpl {
     @Autowired
     private HTTPServer httpServer;
