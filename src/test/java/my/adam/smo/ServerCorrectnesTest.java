@@ -78,7 +78,7 @@ public class ServerCorrectnesTest {
 
             @Override
             public void doHighWeightGoodJob(RpcController controller, TestServices.HighWeightRequest request, RpcCallback<TestServices.HighWeightResponse> done) {
-                byte[] out = getMegaBytes(10);
+                byte[] out = getMegaBytes(request.getLoad());
                 done.run(TestServices.HighWeightResponse
                         .newBuilder()
                         .setResponse(ByteString.copyFrom(out))
@@ -146,22 +146,32 @@ public class ServerCorrectnesTest {
     }
 
     @Test
-    public void highPayloadTest() {
+    public void ultraHighPayloadTest() {
+        // given
         TestServices.NewUsefullTestService.BlockingInterface httpBlockingService = TestServices.NewUsefullTestService.newBlockingStub(httpBlockingChannel);
         TestServices.NewUsefullTestService.BlockingInterface socketBlockingService = TestServices.NewUsefullTestService.newBlockingStub(socketBlockingChannel);
+        int dataAmount = 500;
 
         TestServices.HighWeightRequest in = TestServices.HighWeightRequest
                 .newBuilder()
-                .setRequest(ByteString.copyFrom(getMegaBytes(10)))
+                .setRequest(ByteString.copyFrom(getMegaBytes(dataAmount)))
+                .setLoad(dataAmount)
                 .build();
+        int httpResponseSize = 0;
+        int socketResponseSize = 0;
 
+        // when
         try {
-            Assert.assertEquals(1024 * 10, httpBlockingService.doHighWeightGoodJob(new DummyRpcController(), in).getResponse().size());
-            Assert.assertEquals(1024 * 10, socketBlockingService.doHighWeightGoodJob(new DummyRpcController(), in).getResponse().size());
+            httpResponseSize = httpBlockingService.doHighWeightGoodJob(new DummyRpcController(), in).getResponse().size();
+            socketResponseSize = socketBlockingService.doHighWeightGoodJob(new DummyRpcController(), in).getResponse().size();
         } catch (ServiceException e) {
             logger.error("err", e);
             Assert.fail("call failed");
         }
+
+        // then
+        Assert.assertEquals(1024 * dataAmount, httpResponseSize);
+        Assert.assertEquals(1024 * dataAmount, socketResponseSize);
     }
 
     public static byte[] getMegaBytes(int amount) {

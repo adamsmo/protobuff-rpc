@@ -49,81 +49,82 @@ public abstract class AbstractCommunicator {
 
     public RPCommunication.Response getDecryptedResponse(RPCommunication.Response response) {
         byte[] encryptedResponse = response.getResponse().toByteArray();
-        ByteString decryptedResponse = ByteString
+        ByteString plainTextResponse = ByteString
                 .copyFrom(symmetricEncryptionBox.decrypt(encryptedResponse));
-        response = response.toBuilder().setResponse(decryptedResponse).build();
+        response = response.toBuilder().setResponse(plainTextResponse).build();
         return response;
     }
 
     public RPCommunication.Response getEncryptedResponse(RPCommunication.Response response) {
-        byte[] encryptedResponse = response.getResponse().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse));
-        response = response.toBuilder().setResponse(decryptedResponse).build();
+        byte[] plainTextResponse = response.getResponse().toByteArray();
+        ByteString encryptedResponse = ByteString
+                .copyFrom(symmetricEncryptionBox.encrypt(plainTextResponse));
+        response = response.toBuilder().setResponse(encryptedResponse).build();
         return response;
     }
 
 
     public RPCommunication.Request getDecryptedRequest(RPCommunication.Request request) {
-        byte[] encryptedResponse = request.getMethodArgument().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(symmetricEncryptionBox.decrypt(encryptedResponse));
-        request = request.toBuilder().setMethodArgument(decryptedResponse).build();
+        byte[] encryptedRequest = request.getMethodArgument().toByteArray();
+        ByteString plainTextRequest = ByteString
+                .copyFrom(symmetricEncryptionBox.decrypt(encryptedRequest));
+        request = request.toBuilder().setMethodArgument(plainTextRequest).build();
         return request;
     }
 
     public RPCommunication.Request getEncryptedRequest(RPCommunication.Request request) {
-        byte[] encryptedResponse = request.getMethodArgument().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse));
-        request = request.toBuilder().setMethodArgument(decryptedResponse).build();
+        byte[] plainTextResponse = request.getMethodArgument().toByteArray();
+        ByteString encryptedResponse = ByteString
+                .copyFrom(symmetricEncryptionBox.encrypt(plainTextResponse));
+        request = request.toBuilder().setMethodArgument(encryptedResponse).build();
         return request;
     }
 
     public RPCommunication.Response getAsymDecryptedResponse(RPCommunication.Response response) {
-        byte[] aesKey = response.getSecret().toByteArray();
-        aesKey = asymmetricEncryptionBox.decrypt(aesKey);
+        byte[] encryptedAesKey = response.getSecret().toByteArray();
+        byte[] aesKey = asymmetricEncryptionBox.decrypt(encryptedAesKey);
         byte[] encryptedResponse = response.getResponse().toByteArray();
-        ByteString decryptedResponse = ByteString
+        ByteString plainTextResponse = ByteString
                 .copyFrom(symmetricEncryptionBox.decrypt(encryptedResponse, aesKey));
-        response = response.toBuilder().setResponse(decryptedResponse).build();
+        response = response.toBuilder().setResponse(plainTextResponse).build();
         return response;
     }
 
     public RPCommunication.Response getAsymEncryptedResponse(RPCommunication.Response response) {
         byte[] aesKey = new byte[16];
         secureRandom.nextBytes(aesKey);
-        byte[] encryptedResponse = response.getResponse().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse, aesKey));
-        aesKey = asymmetricEncryptionBox.encrypt(aesKey);
+        byte[] plainTextResponse = response.getResponse().toByteArray();
+        ByteString encryptedResponse = ByteString
+                .copyFrom(symmetricEncryptionBox.encrypt(plainTextResponse, aesKey));
+        byte[] encryptedAesKey = asymmetricEncryptionBox.encrypt(aesKey);
         response = response.toBuilder()
-                .setResponse(decryptedResponse)
-                .setSecret(ByteString.copyFrom(aesKey))
+                .setResponse(encryptedResponse)
+                .setSecret(ByteString.copyFrom(encryptedAesKey))
                 .build();
         return response;
     }
 
     public RPCommunication.Request getAsymDecryptedRequest(RPCommunication.Request request) {
-        byte[] aesKey = request.getSecret().toByteArray();
-        aesKey = asymmetricEncryptionBox.decrypt(aesKey);
-        byte[] encryptedResponse = request.getMethodArgument().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(symmetricEncryptionBox.decrypt(encryptedResponse, aesKey));
-        request = request.toBuilder().setMethodArgument(decryptedResponse).build();
+        byte[] encryptedAesKey = request.getSecret().toByteArray();
+        byte[] aesKey = asymmetricEncryptionBox.decrypt(encryptedAesKey);
+
+        byte[] encryptedRequest = request.getMethodArgument().toByteArray();
+        ByteString plainTextRequest = ByteString
+                .copyFrom(symmetricEncryptionBox.decrypt(encryptedRequest, aesKey));
+        request = request.toBuilder().setMethodArgument(plainTextRequest).build();
         return request;
     }
 
     public RPCommunication.Request getAsymEncryptedRequest(RPCommunication.Request request) {
         byte[] aesKey = new byte[16];
         secureRandom.nextBytes(aesKey);
-        byte[] encryptedResponse = request.getMethodArgument().toByteArray();
-        ByteString decryptedResponse = ByteString
-                .copyFrom(symmetricEncryptionBox.encrypt(encryptedResponse, aesKey));
-        aesKey = asymmetricEncryptionBox.encrypt(aesKey);
+        byte[] plainTextRequest = request.getMethodArgument().toByteArray();
+        ByteString encryptedRequest = ByteString
+                .copyFrom(symmetricEncryptionBox.encrypt(plainTextRequest, aesKey));
+        byte[] encryptedAesKey = asymmetricEncryptionBox.encrypt(aesKey);
         request = request.toBuilder()
-                .setMethodArgument(decryptedResponse)
-                .setSecret(ByteString.copyFrom(aesKey))
+                .setMethodArgument(encryptedRequest)
+                .setSecret(ByteString.copyFrom(encryptedAesKey))
                 .build();
         return request;
     }

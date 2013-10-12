@@ -17,6 +17,7 @@ message Out {
 
 message HighWeightRequest {
     optional bytes request = 1;
+    required int32 load = 2;
 }
 
 message HighWeightResponse {
