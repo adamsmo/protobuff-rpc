@@ -5,6 +5,7 @@ import my.adam.smo.common.AbstractCommunicator;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StopWatch;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,6 +62,9 @@ public abstract class Client extends AbstractCommunicator {
 
             @Override
             public Message callBlockingMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype) throws ServiceException {
+                StopWatch stopWatch = new StopWatch("callBlockingMethod");
+                stopWatch.start();
+
                 RpcCallback<Message> done = new RpcCallback<Message>() {
                     @Override
                     public void run(Message parameter) {
@@ -75,6 +79,9 @@ public abstract class Client extends AbstractCommunicator {
                 } catch (InterruptedException e) {
                     getLogger().error("call failed", e);
                 }
+
+                stopWatch.stop();
+                getLogger().debug(stopWatch.shortSummary());
                 return result;
             }
         };

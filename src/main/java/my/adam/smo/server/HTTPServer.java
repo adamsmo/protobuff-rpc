@@ -12,10 +12,12 @@ import org.jboss.netty.handler.codec.base64.Base64;
 import org.jboss.netty.handler.codec.base64.Base64Dialect;
 import org.jboss.netty.handler.codec.http.*;
 import org.jboss.netty.handler.logging.LoggingHandler;
+import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import javax.inject.Inject;
 import java.util.concurrent.Executors;
@@ -63,14 +65,18 @@ public class HTTPServer extends Server {
                 if (enableTrafficLogging) {
                     p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
                 }
-                p.addLast("decoder", new HttpRequestDecoder());
 
-                p.addLast("encoder", new HttpResponseEncoder());
+                p.addLast("codec", new HttpServerCodec());
+                p.addLast("chunkAggregator", new HttpChunkAggregator(MAX_CONTENT_LENGTH));
+                p.addLast("chunkedWriter", new ChunkedWriteHandler());
                 p.addLast("compressor", new HttpContentCompressor());
 
                 p.addLast("handler", new SimpleChannelUpstreamHandler() {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
+                        StopWatch stopWatch = new StopWatch("messageReceived");
+                        stopWatch.start();
+
                         final DefaultHttpRequest httpRequest = (DefaultHttpRequest) e.getMessage();
                         ChannelBuffer cb = Base64.decode(httpRequest.getContent(), Base64Dialect.STANDARD);
 
@@ -142,6 +148,8 @@ public class HTTPServer extends Server {
                         };
                         logger.debug("calling " + methodToCall.getFullName());
                         service.callMethod(methodToCall, dummyController, methodArguments, callback);
+                        stopWatch.stop();
+                        logger.debug("messageReceived " + stopWatch.shortSummary());
                     }
                 });
                 return p;

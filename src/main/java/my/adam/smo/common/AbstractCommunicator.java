@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
  * THE SOFTWARE.
  */
 public abstract class AbstractCommunicator {
+    protected static final int MAX_CONTENT_LENGTH = Integer.MAX_VALUE;
     @Autowired
     private SymmetricEncryptionBox symmetricEncryptionBox;
     @Autowired

@@ -11,10 +11,12 @@ import org.jboss.netty.handler.codec.base64.Base64;
 import org.jboss.netty.handler.codec.base64.Base64Dialect;
 import org.jboss.netty.handler.codec.http.*;
 import org.jboss.netty.handler.logging.LoggingHandler;
+import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import javax.inject.Inject;
 import java.net.InetSocketAddress;
@@ -45,8 +47,6 @@ import java.util.concurrent.Executors;
  */
 @Component
 public class HTTPClient extends Client {
-    private static final int MAX_CONTENT_LENGTH = Integer.MAX_VALUE;
-
     @InjectLogger
     private Logger logger;
 
@@ -58,6 +58,8 @@ public class HTTPClient extends Client {
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
             public ChannelPipeline getPipeline() throws Exception {
+                StopWatch stopWatch = new StopWatch("getPipeline");
+                stopWatch.start();
 
                 ChannelPipeline p = Channels.pipeline();
 
@@ -67,11 +69,15 @@ public class HTTPClient extends Client {
 
                 p.addLast("codec", new HttpClientCodec());
                 p.addLast("chunkAggregator", new HttpChunkAggregator(MAX_CONTENT_LENGTH));
+                p.addLast("chunkedWriter", new ChunkedWriteHandler());
                 p.addLast("decompressor", new HttpContentDecompressor());
 
                 p.addLast("handler", new SimpleChannelUpstreamHandler() {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+                        StopWatch stopWatch = new StopWatch("messageReceived");
+                        stopWatch.start();
+
                         HttpResponse httpResponse = (HttpResponse) e.getMessage();
 
                         ChannelBuffer cb = Base64.decode(httpResponse.getContent(), Base64Dialect.STANDARD);
@@ -95,8 +101,13 @@ public class HTTPClient extends Client {
                         callbackMap.remove(response.getRequestId()).run(m);
 
                         super.messageReceived(ctx, e);
+                        stopWatch.stop();
+                        logger.debug(stopWatch.shortSummary());
                     }
                 });
+
+                stopWatch.stop();
+                logger.debug(stopWatch.shortSummary());
                 return p;
             }
         });
@@ -109,6 +120,9 @@ public class HTTPClient extends Client {
 
             @Override
             public void callMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype, RpcCallback<Message> done) {
+                StopWatch stopWatch = new StopWatch("callMethod");
+                stopWatch.start();
+
                 long id = seqNum.addAndGet(1);
 
                 logger.trace("calling method: " + method.getFullName());
@@ -153,6 +167,9 @@ public class HTTPClient extends Client {
 
                 callbackMap.put(id, done);
                 descriptorProtoMap.put(id, responsePrototype);
+
+                stopWatch.stop();
+                logger.debug(stopWatch.shortSummary());
             }
         };
         logger.trace("connected to address: " + sa.toString());

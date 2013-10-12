@@ -15,6 +15,15 @@ message Out {
     required int32 result = 1;
 }
 
+message HighWeightRequest {
+    optional bytes request = 1;
+}
+
+message HighWeightResponse {
+    optional bytes response = 1;
+}
+
 service NewUsefullTestService {
     rpc DoGoodJob (In) returns (Out);
+    rpc DoHighWeightGoodJob (HighWeightRequest) returns (HighWeightResponse);
 }

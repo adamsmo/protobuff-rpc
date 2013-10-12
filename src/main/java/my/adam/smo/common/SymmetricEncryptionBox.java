@@ -69,12 +69,12 @@ public class SymmetricEncryptionBox {
         gen.init(key.getBytes(), Base64.decode(key));
     }
 
-    public byte[] encrypt(byte[] plainTextKey) {
+    public byte[] encrypt(byte[] plainText) {
         byte[] seed = new byte[seedLength];
         secureRandom.nextBytes(seed);
-        byte[] seededPlainTextKey = addSeedToMessage(plainTextKey, seed);
+        byte[] seededPlainText = addSeedToMessage(plainText, seed);
 
-        byte[] out = seededPlainTextKey.clone();
+        byte[] out = seededPlainText.clone();
 
         byte[] iv = new byte[ivLength];
         secureRandom.nextBytes(iv);
@@ -87,20 +87,20 @@ public class SymmetricEncryptionBox {
         encCipher.init(true, cp);
 
 
-        encCipher.processBytes(seededPlainTextKey, 0, seededPlainTextKey.length, out, 0);
+        encCipher.processBytes(seededPlainText, 0, seededPlainText.length, out, 0);
         return appendIV(out, iv);
     }
 
-    public byte[] decrypt(byte[] encryptedKey) {
-        byte[] out = Arrays.copyOfRange(encryptedKey, ivLength, encryptedKey.length);
+    public byte[] decrypt(byte[] cryptogram) {
+        byte[] out = Arrays.copyOfRange(cryptogram, ivLength, cryptogram.length);
 
-        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key.getBytes())), getIV(encryptedKey));
+        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key.getBytes())), getIV(cryptogram));
 
         PaddedBufferedBlockCipher descCipher;
         descCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(
                 new AESEngine()), new PKCS7Padding());
         descCipher.init(false, cp);
-        descCipher.processBytes(encryptedKey, ivLength, encryptedKey.length - ivLength, out, 0);
+        descCipher.processBytes(cryptogram, ivLength, cryptogram.length - ivLength, out, 0);
         return getMessageWithoutSeed(out);
     }
 

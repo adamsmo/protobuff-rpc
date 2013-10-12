@@ -18,8 +18,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.security.SecureRandom;
 
 /**
  * The MIT License
@@ -45,12 +44,12 @@ import java.util.concurrent.TimeUnit;
  * THE SOFTWARE.
  */
 public class ServerCorrectnesTest {
-
-    private static final int ARBITRARY_CONSTANT = 99999;
     private RpcChannel httpChannel;
     private BlockingRpcChannel httpBlockingChannel;
     private RpcChannel socketChannel;
     private BlockingRpcChannel socketBlockingChannel;
+    private HTTPServer httpServer;
+    private SocketServer socketServer;
 
     private final int result = 2;
 
@@ -64,8 +63,8 @@ public class ServerCorrectnesTest {
         ApplicationContext clientContext = new ClassPathXmlApplicationContext("Context.xml");
         ApplicationContext serverContext = new ClassPathXmlApplicationContext("Context.xml");
 
-        HTTPServer httpServer = serverContext.getBean(HTTPServer.class);
-        SocketServer socketServer = serverContext.getBean(SocketServer.class);
+        httpServer = serverContext.getBean(HTTPServer.class);
+        socketServer = serverContext.getBean(SocketServer.class);
         HTTPClient httpClient = clientContext.getBean(HTTPClient.class);
         SocketClient socketClient = clientContext.getBean(SocketClient.class);
 
@@ -75,6 +74,15 @@ public class ServerCorrectnesTest {
             @Override
             public void doGoodJob(RpcController controller, TestServices.In request, RpcCallback<TestServices.Out> done) {
                 done.run(out);
+            }
+
+            @Override
+            public void doHighWeightGoodJob(RpcController controller, TestServices.HighWeightRequest request, RpcCallback<TestServices.HighWeightResponse> done) {
+                byte[] out = getMegaBytes(10);
+                done.run(TestServices.HighWeightResponse
+                        .newBuilder()
+                        .setResponse(ByteString.copyFrom(out))
+                        .build());
             }
         });
 
@@ -88,15 +96,19 @@ public class ServerCorrectnesTest {
         httpBlockingChannel = httpClient.blockingConnect(new InetSocketAddress(8081));
         socketChannel = socketClient.connect(new InetSocketAddress(8091));
         socketBlockingChannel = socketClient.blockingConnect(new InetSocketAddress(8091));
+
+        logger.debug("before");
     }
 
     @After
     public void tearDown() {
-
+        httpServer.stop();
+        socketServer.stop();
+        logger.debug("after");
     }
 
     @Test
-    public void test() {
+    public void correctCommunication() {
         int arg1 = 1;
         int arg2 = 2;
 
@@ -108,34 +120,21 @@ public class ServerCorrectnesTest {
 
         TestServices.In in = TestServices.In.newBuilder().setOperand1(arg1).setOperand2(arg2).build();
 
-        final CountDownLatch callbackLatch =
-                new CountDownLatch(ARBITRARY_CONSTANT);
-
         httpService.doGoodJob(new DummyRpcController(), in, new RpcCallback<TestServices.Out>() {
             @Override
             public void run(TestServices.Out parameter) {
                 Assert.assertEquals(result, parameter.getResult());
-                callbackLatch.countDown();
+                logger.debug("httpAsyncCallDone");
             }
         });
-        try {
-            callbackLatch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assert.fail("call timed out");
-        }
 
         socketService.doGoodJob(new DummyRpcController(), in, new RpcCallback<TestServices.Out>() {
             @Override
             public void run(TestServices.Out parameter) {
                 Assert.assertEquals(result, parameter.getResult());
-                callbackLatch.countDown();
+                logger.debug("socketAsyncCallDone");
             }
         });
-        try {
-            callbackLatch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assert.fail("call timed out");
-        }
 
         try {
             Assert.assertEquals(result, httpBlockingService.doGoodJob(new DummyRpcController(), in).getResult());
@@ -144,5 +143,31 @@ public class ServerCorrectnesTest {
             logger.error("err", e);
             Assert.fail("call failed");
         }
+    }
+
+    @Test
+    public void highPayloadTest() {
+        TestServices.NewUsefullTestService.BlockingInterface httpBlockingService = TestServices.NewUsefullTestService.newBlockingStub(httpBlockingChannel);
+        TestServices.NewUsefullTestService.BlockingInterface socketBlockingService = TestServices.NewUsefullTestService.newBlockingStub(socketBlockingChannel);
+
+        TestServices.HighWeightRequest in = TestServices.HighWeightRequest
+                .newBuilder()
+                .setRequest(ByteString.copyFrom(getMegaBytes(10)))
+                .build();
+
+        try {
+            Assert.assertEquals(1024 * 10, httpBlockingService.doHighWeightGoodJob(new DummyRpcController(), in).getResponse().size());
+            Assert.assertEquals(1024 * 10, socketBlockingService.doHighWeightGoodJob(new DummyRpcController(), in).getResponse().size());
+        } catch (ServiceException e) {
+            logger.error("err", e);
+            Assert.fail("call failed");
+        }
+    }
+
+    private byte[] getMegaBytes(int amount) {
+        SecureRandom sr = new SecureRandom();
+        byte[] out = new byte[1024 * amount];
+        sr.nextBytes(out);
+        return out;
     }
 }

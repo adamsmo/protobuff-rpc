@@ -1,15 +1,19 @@
-<configuration>
+<configuration scan="true" scanPeriod="30 seconds">
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- encoders are assigned the type
              ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%file:%line] - %msg%n</pattern>
         </encoder>
         <target>System.out</target>
     </appender>
 
-    <logger name="my.adam.smo" level="trace">
+    <!--<logger name="my.adam.smo" level="DEBUG">-->
+    <!--<appender-ref ref="STDOUT"/>-->
+    <!--</logger>-->
+
+    <root>
         <appender-ref ref="STDOUT"/>
-    </logger>
+    </root>
 </configuration>

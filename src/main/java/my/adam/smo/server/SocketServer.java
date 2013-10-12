@@ -15,6 +15,7 @@ import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import javax.inject.Inject;
 import java.util.concurrent.Executors;
@@ -70,6 +71,9 @@ public class SocketServer extends Server {
                 p.addLast("handler", new SimpleChannelUpstreamHandler() {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
+                        StopWatch stopWatch = new StopWatch("messageReceived");
+                        stopWatch.start();
+
                         RPCommunication.Request request = (RPCommunication.Request) e.getMessage();
                         logger.trace("received request:" + request.toString());
 
@@ -131,6 +135,8 @@ public class SocketServer extends Server {
                         };
                         logger.debug("calling " + methodToCall.getFullName());
                         service.callMethod(methodToCall, dummyController, methodArguments, callback);
+                        stopWatch.stop();
+                        logger.debug(stopWatch.shortSummary());
                     }
                 });
                 return p;

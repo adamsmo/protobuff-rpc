@@ -14,6 +14,7 @@ import org.jboss.netty.logging.InternalLogLevel;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 import javax.inject.Inject;
 import java.net.ConnectException;
@@ -60,6 +61,8 @@ public class SocketClient extends Client {
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
             public ChannelPipeline getPipeline() throws Exception {
+                StopWatch stopWatch = new StopWatch("getPipeline");
+                stopWatch.start();
 
                 ChannelPipeline p = Channels.pipeline();
 
@@ -75,6 +78,9 @@ public class SocketClient extends Client {
                 p.addLast("handler", new SimpleChannelUpstreamHandler() {
                     @Override
                     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+                        StopWatch stopWatch = new StopWatch("messageReceived");
+                        stopWatch.start();
+
                         RPCommunication.Response response = (RPCommunication.Response) e.getMessage();
                         logger.trace("received response:" + response);
 
@@ -94,6 +100,8 @@ public class SocketClient extends Client {
                         callbackMap.remove(response.getRequestId()).run(m);
 
                         super.messageReceived(ctx, e);
+                        stopWatch.stop();
+                        logger.debug(stopWatch.shortSummary());
                     }
 
                     @Override
@@ -106,6 +114,8 @@ public class SocketClient extends Client {
                         }
                     }
                 });
+                stopWatch.stop();
+                logger.debug(stopWatch.shortSummary());
                 return p;
             }
         });
@@ -118,6 +128,9 @@ public class SocketClient extends Client {
 
             @Override
             public void callMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype, RpcCallback<Message> done) {
+                StopWatch stopWatch = new StopWatch("callMethod");
+                stopWatch.start();
+
                 long id = seqNum.addAndGet(1);
 
                 logger.trace("calling method: " + method.getFullName());
@@ -160,6 +173,9 @@ public class SocketClient extends Client {
 
                 callbackMap.put(id, done);
                 descriptorProtoMap.put(id, responsePrototype);
+
+                stopWatch.stop();
+                logger.debug(stopWatch.shortSummary());
             }
         };
         logger.trace("connected to address: " + sa.toString());
