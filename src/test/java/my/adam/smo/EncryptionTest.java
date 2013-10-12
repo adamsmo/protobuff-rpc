@@ -103,14 +103,14 @@ public class EncryptionTest {
                 .newBuilder()
                 .setException("")
                 .setRequestId(1l)
-                .setResponse(ByteString.copyFrom(ServerCorrectnesTest.getMegaBytes(10)))
+                .setResponse(ByteString.copyFrom(ServerCorrectnessTest.getMegaBytes(10)))
                 .build();
 
         Assert.assertEquals(response.getResponse(), s.getAsymDecryptedResponse(s.getAsymEncryptedResponse(response)).getResponse());
 
         RPCommunication.Request request = RPCommunication.Request
                 .newBuilder()
-                .setMethodArgument(ByteString.copyFrom(ServerCorrectnesTest.getMegaBytes(10)))
+                .setMethodArgument(ByteString.copyFrom(ServerCorrectnessTest.getMegaBytes(10)))
                 .setMethodName("ala")
                 .setRequestId(1l)
                 .setServiceName("ola")

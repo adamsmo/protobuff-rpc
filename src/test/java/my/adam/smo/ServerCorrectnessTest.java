@@ -43,7 +43,7 @@ import java.security.SecureRandom;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public class ServerCorrectnesTest {
+public class ServerCorrectnessTest {
     private RpcChannel httpChannel;
     private BlockingRpcChannel httpBlockingChannel;
     private RpcChannel socketChannel;
