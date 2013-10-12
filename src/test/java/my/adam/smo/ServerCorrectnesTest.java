@@ -164,7 +164,7 @@ public class ServerCorrectnesTest {
         }
     }
 
-    private byte[] getMegaBytes(int amount) {
+    public static byte[] getMegaBytes(int amount) {
         SecureRandom sr = new SecureRandom();
         byte[] out = new byte[1024 * amount];
         sr.nextBytes(out);

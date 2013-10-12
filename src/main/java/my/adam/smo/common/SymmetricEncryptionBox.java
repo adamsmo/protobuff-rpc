@@ -70,6 +70,10 @@ public class SymmetricEncryptionBox {
     }
 
     public byte[] encrypt(byte[] plainText) {
+        return encrypt(plainText, key.getBytes());
+    }
+
+    public byte[] encrypt(byte[] plainText, byte[] key) {
         byte[] seed = new byte[seedLength];
         secureRandom.nextBytes(seed);
         byte[] seededPlainText = addSeedToMessage(plainText, seed);
@@ -79,7 +83,7 @@ public class SymmetricEncryptionBox {
         byte[] iv = new byte[ivLength];
         secureRandom.nextBytes(iv);
 
-        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key.getBytes())), iv);
+        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key)), iv);
 
         PaddedBufferedBlockCipher encCipher;
         encCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(
@@ -92,9 +96,13 @@ public class SymmetricEncryptionBox {
     }
 
     public byte[] decrypt(byte[] cryptogram) {
+        return decrypt(cryptogram, key.getBytes());
+    }
+
+    public byte[] decrypt(byte[] cryptogram, byte[] key) {
         byte[] out = Arrays.copyOfRange(cryptogram, ivLength, cryptogram.length);
 
-        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key.getBytes())), getIV(cryptogram));
+        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key)), getIV(cryptogram));
 
         PaddedBufferedBlockCipher descCipher;
         descCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(

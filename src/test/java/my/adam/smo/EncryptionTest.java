@@ -1,11 +1,14 @@
 package my.adam.smo;
 
+import com.google.protobuf.ByteString;
 import junit.framework.Assert;
 import my.adam.smo.common.SymmetricEncryptionBox;
+import my.adam.smo.server.HTTPServer;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -87,5 +90,32 @@ public class EncryptionTest {
 
         byte[] decrypted2 = box.decrypt(cryptogram2);
         Assert.assertTrue("unable to decrypt", Arrays.equals(plainText, decrypted2));
+    }
+
+    @Test
+    public void asymmetricRequestEncryptionTest() {
+        ApplicationContext clientContext = new ClassPathXmlApplicationContext("Context.xml");
+        HTTPServer s = clientContext.getBean(HTTPServer.class);
+
+        SecureRandom secureRandom = new SecureRandom();
+
+        RPCommunication.Response response = RPCommunication.Response
+                .newBuilder()
+                .setException("")
+                .setRequestId(1l)
+                .setResponse(ByteString.copyFrom(ServerCorrectnesTest.getMegaBytes(10)))
+                .build();
+
+        Assert.assertEquals(response.getResponse(), s.getAsymDecryptedResponse(s.getAsymEncryptedResponse(response)).getResponse());
+
+        RPCommunication.Request request = RPCommunication.Request
+                .newBuilder()
+                .setMethodArgument(ByteString.copyFrom(ServerCorrectnesTest.getMegaBytes(10)))
+                .setMethodName("ala")
+                .setRequestId(1l)
+                .setServiceName("ola")
+                .build();
+
+        Assert.assertEquals(request.getMethodArgument(), s.getAsymDecryptedRequest(s.getAsymEncryptedRequest(request)).getMethodArgument());
     }
 }
