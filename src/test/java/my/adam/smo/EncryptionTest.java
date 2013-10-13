@@ -107,6 +107,7 @@ public class EncryptionTest {
                 .build();
 
         Assert.assertEquals(response.getResponse(), s.getAsymDecryptedResponse(s.getAsymEncryptedResponse(response)).getResponse());
+        Assert.assertEquals(response.getResponse(), s.getDecryptedResponse(s.getEncryptedResponse(response)).getResponse());
 
         RPCommunication.Request request = RPCommunication.Request
                 .newBuilder()
@@ -117,5 +118,6 @@ public class EncryptionTest {
                 .build();
 
         Assert.assertEquals(request.getMethodArgument(), s.getAsymDecryptedRequest(s.getAsymEncryptedRequest(request)).getMethodArgument());
+        Assert.assertEquals(request.getMethodArgument(), s.getDecryptedRequest(s.getEncryptedRequest(request)).getMethodArgument());
     }
 }

@@ -121,9 +121,18 @@ public class HTTPServer extends Server {
                             public void run(Message parameter) {
                                 HttpResponse httpResponse = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
 
+                                ByteArrayOutputStream paramOutputStream = new ByteArrayOutputStream();
+                                CodedOutputStream paramCodedOutputStream = CodedOutputStream.newInstance(paramOutputStream);
+                                try {
+                                    parameter.writeTo(paramCodedOutputStream);
+                                    paramCodedOutputStream.flush();
+                                } catch (IOException e1) {
+                                    logger.error("failed to write to output stream");
+                                }
+
                                 RPCommunication.Response response = RPCommunication.Response
                                         .newBuilder()
-                                        .setResponse(parameter.toByteString())
+                                        .setResponse(ByteString.copyFrom(paramOutputStream.toByteArray()))
                                         .setRequestId(protoRequest.getRequestId())
                                         .build();
 

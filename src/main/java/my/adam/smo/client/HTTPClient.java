@@ -20,6 +20,7 @@ import org.springframework.util.StopWatch;
 
 import javax.inject.Inject;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 /**
@@ -98,16 +99,15 @@ public class HTTPClient extends Client {
                         }
 
 
-
-                        Message msg=null;
-                        try{
+                        Message msg = null;
+                        try {
                             msg = descriptorProtoMap.remove(response.getRequestId());
                             Message m = msg
                                     .getParserForType()
                                     .parseFrom(response.getResponse());
                             callbackMap.remove(response.getRequestId()).run(m);
-                        }catch (InvalidProtocolBufferException e2){
-                            logger.debug("for id = " + response.getRequestId() + " got "
+                        } catch (InvalidProtocolBufferException e2) {
+                            logger.debug("for id = " + Arrays.toString(response.toByteArray()) + " got "
                                     + msg.getDescriptorForType().getName());
                             throw e2;
                         }
@@ -175,12 +175,12 @@ public class HTTPClient extends Client {
 
                 httpRequest.setChunked(false);
 
-                c.write(httpRequest);
-
-                logger.trace("request sent: " + protoRequest.toString());
 
                 callbackMap.put(id, done);
                 descriptorProtoMap.put(id, responsePrototype);
+
+                c.write(httpRequest);
+                logger.trace("request sent: " + protoRequest.toString());
 
                 stopWatch.stop();
                 logger.trace(stopWatch.shortSummary());

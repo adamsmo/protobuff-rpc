@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 /**
@@ -95,12 +96,22 @@ public class SocketClient extends Client {
                             logger.trace("symmetric encryption enabled, encrypted request: " + response.toString());
                         }
 
-                        ;
-
-                        Message m = descriptorProtoMap.remove(response.getRequestId())
-                                .getParserForType()
-                                .parseFrom(response.getResponse());
-                        callbackMap.remove(response.getRequestId()).run(m);
+                        Message msg = null;
+                        try {
+                            msg = descriptorProtoMap.remove(response.getRequestId());
+                            Message m = msg
+                                    .getParserForType()
+                                    .parseFrom(response.getResponse());
+                            callbackMap.remove(response.getRequestId()).run(m);
+                        } catch (InvalidProtocolBufferException e2) {
+                            logger.debug("for id = " + Arrays.toString(response.toByteArray()) + " got "
+                                    + msg.getDescriptorForType().getName());
+                            throw e2;
+                        } catch (NullPointerException npe) {
+                            logger.debug("for id = " + Arrays.toString(response.toByteArray()) + " got "
+                                    + msg + " id = " + response.getRequestId());
+                            throw npe;
+                        }
 
                         super.messageReceived(ctx, e);
                         stopWatch.stop();
@@ -170,12 +181,13 @@ public class SocketClient extends Client {
                     logger.trace("asymmetric encryption enabled, encrypted request: " + protoRequest.toString());
                 }
 
-                c.write(protoRequest);
-
-                logger.trace("request sent: " + protoRequest.toString());
 
                 callbackMap.put(id, done);
+                logger.debug("putting " + responsePrototype.getDescriptorForType().getName() + " for id = " + id);
                 descriptorProtoMap.put(id, responsePrototype);
+
+                c.write(protoRequest);
+                logger.trace("request sent: " + protoRequest.toString());
 
                 stopWatch.stop();
                 logger.trace(stopWatch.shortSummary());
