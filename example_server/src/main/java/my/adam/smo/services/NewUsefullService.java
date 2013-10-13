@@ -1,9 +1,10 @@
-package my.adam.smo.serviceimpl;
+package my.adam.smo.services;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.Service;
-import my.adam.smo.POC;
+import my.adam.smo.Example;
+import my.adam.smo.serviceimpl.AbstractServiceImpl;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,15 +31,14 @@ import org.springframework.stereotype.Component;
  * THE SOFTWARE.
  */
 @Component
-public class UsefullThing extends AbstractServiceImpl implements POC.NewUsefullService.Interface {
-
+public class NewUsefullService extends AbstractServiceImpl implements Example.NewUsefullService.Interface {
     @Override
     public Service getService() {
-        return POC.NewUsefullService.newReflectiveService(this);
+        return Example.NewUsefullService.newReflectiveService(this);
     }
 
     @Override
-    public void doGoodJob(RpcController controller, POC.In request, RpcCallback<POC.Out> done) {
-        done.run(POC.Out.newBuilder().setResult(request.getOperand1() + request.getOperand2()).build());
+    public void doGoodJob(RpcController controller, Example.In request, RpcCallback<Example.Out> done) {
+        done.run(Example.Out.newBuilder().setResult(request.getOperand1()+request.getOperand2()).build());
     }
 }

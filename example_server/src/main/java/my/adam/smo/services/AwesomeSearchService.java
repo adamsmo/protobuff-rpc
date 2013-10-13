@@ -1,9 +1,10 @@
-package my.adam.smo.serviceimpl;
+package my.adam.smo.services;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
 import com.google.protobuf.Service;
-import my.adam.smo.POC;
+import my.adam.smo.Example;
+import my.adam.smo.serviceimpl.AbstractServiceImpl;
 import org.springframework.stereotype.Component;
 
 /**
@@ -29,17 +30,15 @@ import org.springframework.stereotype.Component;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 @Component
-public class AwsomeSearchServiceImpl extends AbstractServiceImpl implements POC.AwsomeSearch.Interface {
-
+public class AwesomeSearchService extends AbstractServiceImpl implements Example.AwsomeSearch.Interface {
     @Override
-    public void search(RpcController controller, POC.hello request, RpcCallback<POC.awsomeAnswer> done) {
-        done.run(POC.awsomeAnswer.newBuilder().setAnswer("wynik szukania dla z dodatkową fajnością = " + request.getMessag()).build());
+    public Service getService() {
+        return Example.AwsomeSearch.newReflectiveService(this);
     }
 
     @Override
-    public Service getService() {
-        return POC.AwsomeSearch.newReflectiveService(this);
+    public void search(RpcController controller, Example.Hello request, RpcCallback<Example.AwsomeAnswer> done) {
+        done.run(Example.AwsomeAnswer.newBuilder().setAnswer("i found sth for "+request.getMessag()).build());
     }
 }

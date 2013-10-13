@@ -1,5 +1,7 @@
 target/
-src/test/generated/
-src/main/generated/
+/src/test/generated/
+/src/main/generated/
+*/src/test/generated/
+*/src/main/generated/
 .idea
 *.iml

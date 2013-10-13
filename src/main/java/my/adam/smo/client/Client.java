@@ -81,7 +81,7 @@ public abstract class Client extends AbstractCommunicator {
                 }
 
                 stopWatch.stop();
-                getLogger().debug(stopWatch.shortSummary());
+                getLogger().trace(stopWatch.shortSummary());
                 return result;
             }
         };

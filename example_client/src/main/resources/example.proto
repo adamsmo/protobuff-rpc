@@ -1,16 +1,13 @@
 option java_package = "my.adam.smo";
-
-option java_outer_classname = "POC";
-
+option java_outer_classname = "Example";
 option java_generic_services = true;
-
 option optimize_for = SPEED;
 
-message hello {
+message Hello {
     required string messag = 1;
 }
 
-message awsomeAnswer {
+message AwsomeAnswer {
     required string answer = 1;
 }
 
@@ -23,12 +20,8 @@ message Out {
     required int32 result = 1;
 }
 
-service SearchService {
-    rpc Search (hello) returns (hello);
-}
-
 service AwsomeSearch {
-    rpc Search (hello) returns (awsomeAnswer);
+    rpc Search (Hello) returns (AwsomeAnswer);
 }
 
 service NewUsefullService {

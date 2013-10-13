@@ -1,10 +1,11 @@
-package my.adam.smo.serviceimpl;
+package my.adam.smo;
 
-import com.google.protobuf.RpcCallback;
-import com.google.protobuf.RpcController;
-import com.google.protobuf.Service;
-import my.adam.smo.POC;
-import org.springframework.stereotype.Component;
+import my.adam.smo.server.HTTPServer;
+import my.adam.smo.server.SocketServer;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.net.InetSocketAddress;
 
 /**
  * The MIT License
@@ -29,16 +30,13 @@ import org.springframework.stereotype.Component;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-@Component
-public class SearchServiceImpl extends AbstractServiceImpl implements POC.SearchService.Interface {
+public class Main {
+    public static void main(String args[]){
+        ApplicationContext ac = new ClassPathXmlApplicationContext("Context.xml");
+        HTTPServer httpServer = ac.getBean(HTTPServer.class);
+        SocketServer socketServer = ac.getBean(SocketServer.class);
 
-    @Override
-    public Service getService() {
-        return POC.SearchService.newReflectiveService(this);
-    }
-
-    @Override
-    public void search(RpcController controller, POC.hello request, RpcCallback<POC.hello> done) {
-        done.run(POC.hello.newBuilder().setMessag("wynik szukania dla = " + request.getMessag()).build());
+        httpServer.start(new InetSocketAddress(8080));
+        socketServer.start(new InetSocketAddress(8090));
     }
 }

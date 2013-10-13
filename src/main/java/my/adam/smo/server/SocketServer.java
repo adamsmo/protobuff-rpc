@@ -136,7 +136,7 @@ public class SocketServer extends Server {
                         logger.debug("calling " + methodToCall.getFullName());
                         service.callMethod(methodToCall, dummyController, methodArguments, callback);
                         stopWatch.stop();
-                        logger.debug(stopWatch.shortSummary());
+                        logger.trace(stopWatch.shortSummary());
                     }
                 });
                 return p;

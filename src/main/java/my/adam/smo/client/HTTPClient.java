@@ -82,7 +82,8 @@ public class HTTPClient extends Client {
 
                         ChannelBuffer cb = Base64.decode(httpResponse.getContent(), Base64Dialect.STANDARD);
 
-                        RPCommunication.Response response = RPCommunication.Response.parseFrom(cb.copy(0, cb.readableBytes()).array());
+                        RPCommunication.Response response = RPCommunication.Response
+                                .parseFrom(CodedInputStream.newInstance(cb.copy(0, cb.readableBytes()).array()));
                         logger.trace("received response:" + response);
 
                         //encryption
@@ -96,18 +97,29 @@ public class HTTPClient extends Client {
                             logger.trace("symmetric encryption enabled, encrypted request: " + response.toString());
                         }
 
-                        Message m = descriptorProtoMap.remove(response.getRequestId())
-                                .newBuilderForType().mergeFrom(response.getResponse()).build();
-                        callbackMap.remove(response.getRequestId()).run(m);
+
+
+                        Message msg=null;
+                        try{
+                            msg = descriptorProtoMap.remove(response.getRequestId());
+                            Message m = msg
+                                    .getParserForType()
+                                    .parseFrom(response.getResponse());
+                            callbackMap.remove(response.getRequestId()).run(m);
+                        }catch (InvalidProtocolBufferException e2){
+                            logger.debug("for id = " + response.getRequestId() + " got "
+                                    + msg.getDescriptorForType().getName());
+                            throw e2;
+                        }
 
                         super.messageReceived(ctx, e);
                         stopWatch.stop();
-                        logger.debug(stopWatch.shortSummary());
+                        logger.trace(stopWatch.shortSummary());
                     }
                 });
 
                 stopWatch.stop();
-                logger.debug(stopWatch.shortSummary());
+                logger.trace(stopWatch.shortSummary());
                 return p;
             }
         });
@@ -124,6 +136,8 @@ public class HTTPClient extends Client {
                 stopWatch.start();
 
                 long id = seqNum.addAndGet(1);
+
+                logger.debug("id for callback - " + id + " for methode " + method.getFullName());
 
                 logger.trace("calling method: " + method.getFullName());
 
@@ -169,7 +183,7 @@ public class HTTPClient extends Client {
                 descriptorProtoMap.put(id, responsePrototype);
 
                 stopWatch.stop();
-                logger.debug(stopWatch.shortSummary());
+                logger.trace(stopWatch.shortSummary());
             }
         };
         logger.trace("connected to address: " + sa.toString());

@@ -95,13 +95,16 @@ public class SocketClient extends Client {
                             logger.trace("symmetric encryption enabled, encrypted request: " + response.toString());
                         }
 
+                        ;
+
                         Message m = descriptorProtoMap.remove(response.getRequestId())
-                                .newBuilderForType().mergeFrom(response.getResponse()).build();
+                                .getParserForType()
+                                .parseFrom(response.getResponse());
                         callbackMap.remove(response.getRequestId()).run(m);
 
                         super.messageReceived(ctx, e);
                         stopWatch.stop();
-                        logger.debug(stopWatch.shortSummary());
+                        logger.trace(stopWatch.shortSummary());
                     }
 
                     @Override
@@ -115,7 +118,7 @@ public class SocketClient extends Client {
                     }
                 });
                 stopWatch.stop();
-                logger.debug(stopWatch.shortSummary());
+                logger.trace(stopWatch.shortSummary());
                 return p;
             }
         });
@@ -175,7 +178,7 @@ public class SocketClient extends Client {
                 descriptorProtoMap.put(id, responsePrototype);
 
                 stopWatch.stop();
-                logger.debug(stopWatch.shortSummary());
+                logger.trace(stopWatch.shortSummary());
             }
         };
         logger.trace("connected to address: " + sa.toString());

@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
 import javax.inject.Inject;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.concurrent.Executors;
 
 /**
@@ -135,7 +137,16 @@ public class HTTPServer extends Server {
                                     logger.trace("asymmetric encryption enabled, encrypted response: " + response.toString());
                                 }
 
-                                byte[] arr = response.toByteArray();
+                                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(outputStream);
+                                try {
+                                    response.writeTo(codedOutputStream);
+                                    codedOutputStream.flush();
+                                } catch (IOException e1) {
+                                    logger.debug("unable to write to output stream", e1);
+                                }
+
+                                byte[] arr = outputStream.toByteArray();
 
                                 ChannelBuffer resp = Base64.encode(ChannelBuffers.copiedBuffer(arr), Base64Dialect.STANDARD);
 
@@ -149,7 +160,7 @@ public class HTTPServer extends Server {
                         logger.debug("calling " + methodToCall.getFullName());
                         service.callMethod(methodToCall, dummyController, methodArguments, callback);
                         stopWatch.stop();
-                        logger.debug("messageReceived " + stopWatch.shortSummary());
+                        logger.trace(stopWatch.shortSummary());
                     }
                 });
                 return p;
