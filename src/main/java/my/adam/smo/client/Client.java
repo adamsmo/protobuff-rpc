@@ -53,9 +53,7 @@ public abstract class Client extends AbstractCommunicator {
 
     public BlockingRpcChannel blockingConnect(final InetSocketAddress sa) {
         return new BlockingRpcChannel() {
-            private int ARBITRARY_CONSTANT = 1;
-            private final CountDownLatch callbackLatch =
-                    new CountDownLatch(ARBITRARY_CONSTANT);
+            private int countDownCallTimesToRelease = 1;
 
             private Message result;
             private RpcChannel rpc = connect(sa);
@@ -64,6 +62,8 @@ public abstract class Client extends AbstractCommunicator {
             public Message callBlockingMethod(Descriptors.MethodDescriptor method, RpcController controller, Message request, Message responsePrototype) throws ServiceException {
                 StopWatch stopWatch = new StopWatch("callBlockingMethod");
                 stopWatch.start();
+
+                final CountDownLatch callbackLatch = new CountDownLatch(countDownCallTimesToRelease);
 
                 RpcCallback<Message> done = new RpcCallback<Message>() {
                     @Override

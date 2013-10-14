@@ -68,75 +68,75 @@ public class Main {
         Example.NewUsefullService socknewUsefullService = Example.NewUsefullService.newStub(socketChannel);
 
         while (true) {
-//            try {
-            httpawsomeSearch.search(new DummyRpcController(), Example.Hello
-                    .newBuilder()
-                    .setMessag("hello")
-                    .build(), new RpcCallback<Example.AwsomeAnswer>() {
-                @Override
-                public void run(Example.AwsomeAnswer parameter) {
-                    logger.debug("return from search callback!!");
-                }
-            });
+            try {
+                httpawsomeSearch.search(new DummyRpcController(), Example.Hello
+                        .newBuilder()
+                        .setMessag("hello")
+                        .build(), new RpcCallback<Example.AwsomeAnswer>() {
+                    @Override
+                    public void run(Example.AwsomeAnswer parameter) {
+                        logger.debug("return from search callback!!");
+                    }
+                });
 
-            httpnewUsefullService.doGoodJob(new DummyRpcController(), Example.In
-                    .newBuilder()
-                    .setOperand1(32)
-                    .setOperand2(54)
-                    .build(), new RpcCallback<Example.Out>() {
-                @Override
-                public void run(Example.Out parameter) {
-                    logger.debug("return from doGoodJob callback!!");
-                }
-            });
+                httpnewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                        .newBuilder()
+                        .setOperand1(32)
+                        .setOperand2(54)
+                        .build(), new RpcCallback<Example.Out>() {
+                    @Override
+                    public void run(Example.Out parameter) {
+                        logger.debug("return from doGoodJob callback!!");
+                    }
+                });
 
-            sockawsomeSearch.search(new DummyRpcController(), Example.Hello
-                    .newBuilder()
-                    .setMessag("hello")
-                    .build(), new RpcCallback<Example.AwsomeAnswer>() {
-                @Override
-                public void run(Example.AwsomeAnswer parameter) {
-                    logger.debug("return from search callback!!");
-                }
-            });
+                sockawsomeSearch.search(new DummyRpcController(), Example.Hello
+                        .newBuilder()
+                        .setMessag("hello")
+                        .build(), new RpcCallback<Example.AwsomeAnswer>() {
+                    @Override
+                    public void run(Example.AwsomeAnswer parameter) {
+                        logger.debug("return from search callback!!");
+                    }
+                });
 
-            socknewUsefullService.doGoodJob(new DummyRpcController(), Example.In
-                    .newBuilder()
-                    .setOperand1(32)
-                    .setOperand2(54)
-                    .build(), new RpcCallback<Example.Out>() {
-                @Override
-                public void run(Example.Out parameter) {
-                    logger.debug("return from doGoodJob callback!!");
-                }
-            });
+                socknewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                        .newBuilder()
+                        .setOperand1(32)
+                        .setOperand2(54)
+                        .build(), new RpcCallback<Example.Out>() {
+                    @Override
+                    public void run(Example.Out parameter) {
+                        logger.debug("return from doGoodJob callback!!");
+                    }
+                });
 
-//            try {
-//                Thread.sleep(10);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//                httpAwsomeSearch.search(new DummyRpcController(), Example.Hello
-//                        .newBuilder()
-//                        .setMessag("hello")
-//                        .build());
-//                socketAwsomeSearch.search(new DummyRpcController(), Example.Hello
-//                        .newBuilder()
-//                        .setMessag("hello")
-//                        .build());
-//                httpNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
-//                        .newBuilder()
-//                        .setOperand1(32)
-//                        .setOperand2(54)
-//                        .build());
-//                socketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
-//                        .newBuilder()
-//                        .setOperand1(32)
-//                        .setOperand2(54)
-//                        .build());
-//            } catch (ServiceException e) {
-//                logger.error("timeout", e);
-//            }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                httpAwsomeSearch.search(new DummyRpcController(), Example.Hello
+                        .newBuilder()
+                        .setMessag("hello")
+                        .build());
+                socketAwsomeSearch.search(new DummyRpcController(), Example.Hello
+                        .newBuilder()
+                        .setMessag("hello")
+                        .build());
+                httpNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                        .newBuilder()
+                        .setOperand1(32)
+                        .setOperand2(54)
+                        .build());
+                socketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                        .newBuilder()
+                        .setOperand1(32)
+                        .setOperand2(54)
+                        .build());
+            } catch (ServiceException e) {
+                logger.error("timeout", e);
+            }
         }
     }
 }
