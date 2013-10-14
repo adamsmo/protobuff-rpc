@@ -2,6 +2,8 @@ package my.adam.smo;
 
 import my.adam.smo.server.HTTPServer;
 import my.adam.smo.server.SocketServer;
+import my.adam.smo.services.AwesomeSearchService;
+import my.adam.smo.services.NewUsefullService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -38,5 +40,10 @@ public class Main {
 
         httpServer.start(new InetSocketAddress(8080));
         socketServer.start(new InetSocketAddress(8090));
+
+        Refero.getHttpServer()
+                .register(Example.AwsomeSearch.newReflectiveService(new AwesomeSearchService()))
+                .register(Example.NewUsefullService.newReflectiveService(new NewUsefullService()))
+                .start(new InetSocketAddress(18080));
     }
 }

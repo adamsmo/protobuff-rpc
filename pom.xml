@@ -118,7 +118,7 @@
                     <excludes>
                         <exclude>*.proto</exclude>
                         <exclude>*.properties</exclude>
-                        <exclude>*.xml</exclude>
+                        <exclude>logback.xml</exclude>
                     </excludes>
                 </configuration>
             </plugin>

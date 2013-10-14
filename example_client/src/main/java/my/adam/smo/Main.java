@@ -67,6 +67,14 @@ public class Main {
         Example.AwsomeSearch sockawsomeSearch = Example.AwsomeSearch.newStub(socketChannel);
         Example.NewUsefullService socknewUsefullService = Example.NewUsefullService.newStub(socketChannel);
 
+
+        BlockingRpcChannel reffChannel = Refero.getHttpClient().blockingConnect(new InetSocketAddress(18080));
+
+        Example.NewUsefullService.BlockingInterface reffSocketNewUsefullService = Example.NewUsefullService
+                .newBlockingStub(reffChannel);
+        Example.AwsomeSearch.BlockingInterface reffHttpAwsomeSearch = Example.AwsomeSearch
+                .newBlockingStub(reffChannel);
+
         while (true) {
             try {
                 httpawsomeSearch.search(new DummyRpcController(), Example.Hello
@@ -133,6 +141,16 @@ public class Main {
                         .newBuilder()
                         .setOperand1(32)
                         .setOperand2(54)
+                        .build());
+
+                reffSocketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                        .newBuilder()
+                        .setOperand1(32)
+                        .setOperand2(54)
+                        .build());
+                reffHttpAwsomeSearch.search(new DummyRpcController(), Example.Hello
+                        .newBuilder()
+                        .setMessag("hello")
                         .build());
             } catch (ServiceException e) {
                 logger.error("timeout", e);

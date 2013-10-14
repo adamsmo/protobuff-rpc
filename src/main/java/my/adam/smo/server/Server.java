@@ -37,13 +37,14 @@ public abstract class Server extends AbstractCommunicator {
     protected ConcurrentHashMap<String, Service> serviceMap = new ConcurrentHashMap<String, Service>();
     protected static final int MAX_FRAME_BYTES_LENGTH = Integer.MAX_VALUE;
 
-    public void start(SocketAddress sa) {
+    public Server start(SocketAddress sa) {
         try {
             bootstrap.bind(sa);
             getLogger().trace("server started on " + sa.toString());
         } catch (ChannelException e) {
             getLogger().error("error while starting server ", e);
         }
+        return this;
     }
 
     public void stop() {
@@ -51,10 +52,11 @@ public abstract class Server extends AbstractCommunicator {
         getLogger().debug("server stoped");
     }
 
-    public void register(Service service) {
+    public Server register(Service service) {
         serviceMap.put(service.getDescriptorForType().getFullName(), service);
         getLogger().trace("service " + service.getClass().toString()
                 + " registered with name " + service.getDescriptorForType().getFullName());
+        return this;
     }
 
     public abstract Logger getLogger();

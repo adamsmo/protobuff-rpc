@@ -32,26 +32,26 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class Refero {
     private static ClassPathXmlApplicationContext applicationContext;
 
-    private static ClassPathXmlApplicationContext getClientServerContext(){
-        if(applicationContext==null){
-            applicationContext = new ClassPathXmlApplicationContext("Context.xml");
+    private static ClassPathXmlApplicationContext getClientServerContext() {
+        if (applicationContext == null) {
+            applicationContext = new ClassPathXmlApplicationContext("refero-context.xml");
         }
         return applicationContext;
     }
 
-    public static HTTPServer getHttpServer(){
+    public static HTTPServer getHttpServer() {
         return getClientServerContext().getBean(HTTPServer.class);
     }
 
-    public static SocketServer getSocketServer(){
+    public static SocketServer getSocketServer() {
         return getClientServerContext().getBean(SocketServer.class);
     }
 
-    public static HTTPClient getHttpClient(){
+    public static HTTPClient getHttpClient() {
         return getClientServerContext().getBean(HTTPClient.class);
     }
 
-    public static SocketClient getSocketClient(){
+    public static SocketClient getSocketClient() {
         return getClientServerContext().getBean(SocketClient.class);
     }
 }
