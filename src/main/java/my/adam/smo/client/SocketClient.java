@@ -96,22 +96,11 @@ public class SocketClient extends Client {
                             logger.trace("symmetric encryption enabled, encrypted request: " + response.toString());
                         }
 
-                        Message msg = null;
-                        try {
-                            msg = descriptorProtoMap.remove(response.getRequestId());
-                            Message m = msg
-                                    .getParserForType()
-                                    .parseFrom(response.getResponse());
-                            callbackMap.remove(response.getRequestId()).run(m);
-                        } catch (InvalidProtocolBufferException e2) {
-                            logger.debug("for id = " + Arrays.toString(response.toByteArray()) + " got "
-                                    + msg.getDescriptorForType().getName());
-                            throw e2;
-                        } catch (NullPointerException npe) {
-                            logger.debug("for id = " + Arrays.toString(response.toByteArray()) + " got "
-                                    + msg + " id = " + response.getRequestId());
-                            throw npe;
-                        }
+                        Message msg = descriptorProtoMap.remove(response.getRequestId());
+                        Message m = msg
+                                .getParserForType()
+                                .parseFrom(response.getResponse());
+                        callbackMap.remove(response.getRequestId()).run(m);
 
                         super.messageReceived(ctx, e);
                         stopWatch.stop();

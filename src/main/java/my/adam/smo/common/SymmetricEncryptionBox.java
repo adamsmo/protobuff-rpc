@@ -48,7 +48,6 @@ import java.util.Arrays;
 public class SymmetricEncryptionBox {
     //    private CipherParameters cp;
     private SecureRandom secureRandom;
-    private MessageDigest md;
 
     public static final int ivLength = 16;
     //must be at least long enough that after adding it to message, message will be at least 17 bytes long
@@ -63,7 +62,6 @@ public class SymmetricEncryptionBox {
     @PostConstruct
     public void init() throws NoSuchAlgorithmException {
         secureRandom = new SecureRandom(key.getBytes());
-        md = MessageDigest.getInstance("SHA-256");
 
         OpenSSLPBEParametersGenerator gen = new OpenSSLPBEParametersGenerator();
         gen.init(key.getBytes(), Base64.decode(key));
@@ -83,6 +81,13 @@ public class SymmetricEncryptionBox {
         byte[] iv = new byte[ivLength];
         secureRandom.nextBytes(iv);
 
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("error while getting digest algorithm", e);
+        }
+
         CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key)), iv);
 
         PaddedBufferedBlockCipher encCipher;
@@ -101,6 +106,13 @@ public class SymmetricEncryptionBox {
 
     public byte[] decrypt(byte[] cryptogram, byte[] key) {
         byte[] out = Arrays.copyOfRange(cryptogram, ivLength, cryptogram.length);
+
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("error while getting digest algorithm", e);
+        }
 
         CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key)), getIV(cryptogram));
 

@@ -39,6 +39,9 @@ public class AwesomeSearchService extends AbstractServiceImpl implements Example
 
     @Override
     public void search(RpcController controller, Example.Hello request, RpcCallback<Example.AwsomeAnswer> done) {
-        done.run(Example.AwsomeAnswer.newBuilder().setAnswer("i found sth for "+request.getMessag()).build());
+        done.run(Example.AwsomeAnswer
+                .newBuilder()
+                .setAnswer("i found sth for " + request.getMessag())
+                .build());
     }
 }
