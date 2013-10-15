@@ -20,7 +20,6 @@ import org.springframework.util.StopWatch;
 
 import javax.inject.Inject;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 /**
@@ -128,8 +127,6 @@ public class HTTPClient extends Client {
                 stopWatch.start();
 
                 long id = seqNum.addAndGet(1);
-
-                logger.debug("id for callback - " + id + " for methode " + method.getFullName());
 
                 logger.trace("calling method: " + method.getFullName());
 

@@ -20,7 +20,6 @@ import javax.inject.Inject;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 /**
@@ -172,7 +171,6 @@ public class SocketClient extends Client {
 
 
                 callbackMap.put(id, done);
-                logger.debug("putting " + responsePrototype.getDescriptorForType().getName() + " for id = " + id);
                 descriptorProtoMap.put(id, responsePrototype);
 
                 c.write(protoRequest);
