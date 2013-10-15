@@ -41,6 +41,7 @@ public class Main {
         httpServer.start(new InetSocketAddress(8080));
         socketServer.start(new InetSocketAddress(8090));
 
+        // manually without spring
         Refero.getHttpServer()
                 .register(Example.AwsomeSearch.newReflectiveService(new AwesomeSearchService()))
                 .register(Example.NewUsefullService.newReflectiveService(new NewUsefullService()))

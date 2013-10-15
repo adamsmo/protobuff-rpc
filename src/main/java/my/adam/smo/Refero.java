@@ -1,8 +1,10 @@
 package my.adam.smo;
 
+import my.adam.smo.client.Client;
 import my.adam.smo.client.HTTPClient;
 import my.adam.smo.client.SocketClient;
 import my.adam.smo.server.HTTPServer;
+import my.adam.smo.server.Server;
 import my.adam.smo.server.SocketServer;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -37,6 +39,14 @@ public class Refero {
             applicationContext = new ClassPathXmlApplicationContext("refero-context.xml");
         }
         return applicationContext;
+    }
+
+    public static Server getServer() {
+        return getSocketServer();
+    }
+
+    public static Client getClient() {
+        return getSocketClient();
     }
 
     public static HTTPServer getHttpServer() {

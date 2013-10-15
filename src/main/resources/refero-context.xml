@@ -8,8 +8,5 @@
 
     <context:annotation-config/>
     <context:component-scan base-package="my.adam.smo"/>
-    <context:property-placeholder location="classpath:app.properties"/>
-
-    <!--<aop:aspectj-autoproxy />-->
-
+    <context:property-placeholder location="classpath:refero.properties"/>
 </beans>

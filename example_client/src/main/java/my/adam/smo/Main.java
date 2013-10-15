@@ -67,13 +67,14 @@ public class Main {
         Example.AwsomeSearch sockawsomeSearch = Example.AwsomeSearch.newStub(socketChannel);
         Example.NewUsefullService socknewUsefullService = Example.NewUsefullService.newStub(socketChannel);
 
-
+        // manually without spring
         BlockingRpcChannel reffChannel = Refero.getHttpClient().blockingConnect(new InetSocketAddress(18080));
 
         Example.NewUsefullService.BlockingInterface reffSocketNewUsefullService = Example.NewUsefullService
                 .newBlockingStub(reffChannel);
         Example.AwsomeSearch.BlockingInterface reffHttpAwsomeSearch = Example.AwsomeSearch
                 .newBlockingStub(reffChannel);
+        // -----------------------
 
         while (true) {
             try {
@@ -124,34 +125,34 @@ public class Main {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                httpAwsomeSearch.search(new DummyRpcController(), Example.Hello
+                logger.debug(httpAwsomeSearch.search(new DummyRpcController(), Example.Hello
                         .newBuilder()
                         .setMessag("hello")
-                        .build());
-                socketAwsomeSearch.search(new DummyRpcController(), Example.Hello
+                        .build()).getAnswer());
+                logger.debug(socketAwsomeSearch.search(new DummyRpcController(), Example.Hello
                         .newBuilder()
                         .setMessag("hello")
-                        .build());
-                httpNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                        .build()).getAnswer());
+                logger.debug(httpNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
                         .newBuilder()
                         .setOperand1(32)
                         .setOperand2(54)
-                        .build());
-                socketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                        .build()).getSerializedSize()+"");
+                logger.debug(socketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
                         .newBuilder()
                         .setOperand1(32)
                         .setOperand2(54)
-                        .build());
+                        .build()).getResult()+"");
 
-                reffSocketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                logger.debug(reffSocketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
                         .newBuilder()
                         .setOperand1(32)
                         .setOperand2(54)
-                        .build());
-                reffHttpAwsomeSearch.search(new DummyRpcController(), Example.Hello
+                        .build()).getResult()+"");
+                logger.debug(reffHttpAwsomeSearch.search(new DummyRpcController(), Example.Hello
                         .newBuilder()
                         .setMessag("hello")
-                        .build());
+                        .build()).getAnswer());
             } catch (ServiceException e) {
                 logger.error("timeout", e);
             }
