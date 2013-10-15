@@ -13,6 +13,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * The MIT License
@@ -51,13 +53,13 @@ public class Main {
         RpcChannel httpChannel = httpClient.connect(new InetSocketAddress(8080));
         RpcChannel socketChannel = socketClient.connect(new InetSocketAddress(8090));
 
-        Example.NewUsefullService.BlockingInterface httpNewUsefullService = Example.NewUsefullService
+        final Example.NewUsefullService.BlockingInterface httpNewUsefullService = Example.NewUsefullService
                 .newBlockingStub(httpBChannel);
-        Example.NewUsefullService.BlockingInterface socketNewUsefullService = Example.NewUsefullService
+        final Example.NewUsefullService.BlockingInterface socketNewUsefullService = Example.NewUsefullService
                 .newBlockingStub(socketBChannel);
-        Example.AwsomeSearch.BlockingInterface httpAwsomeSearch = Example.AwsomeSearch
+        final Example.AwsomeSearch.BlockingInterface httpAwsomeSearch = Example.AwsomeSearch
                 .newBlockingStub(httpBChannel);
-        Example.AwsomeSearch.BlockingInterface socketAwsomeSearch = Example.AwsomeSearch
+        final Example.AwsomeSearch.BlockingInterface socketAwsomeSearch = Example.AwsomeSearch
                 .newBlockingStub(socketBChannel);
 
         Example.AwsomeSearch httpawsomeSearch = Example.AwsomeSearch.newStub(httpChannel);
@@ -69,14 +71,13 @@ public class Main {
         // manually without spring
         BlockingRpcChannel reffChannel = Refero.getHttpClient().blockingConnect(new InetSocketAddress(18080));
 
-        Example.NewUsefullService.BlockingInterface reffSocketNewUsefullService = Example.NewUsefullService
+        final Example.NewUsefullService.BlockingInterface reffSocketNewUsefullService = Example.NewUsefullService
                 .newBlockingStub(reffChannel);
-        Example.AwsomeSearch.BlockingInterface reffHttpAwsomeSearch = Example.AwsomeSearch
+        final Example.AwsomeSearch.BlockingInterface reffHttpAwsomeSearch = Example.AwsomeSearch
                 .newBlockingStub(reffChannel);
         // -----------------------
 
         while (true) {
-            try {
                 httpawsomeSearch.search(new DummyRpcController(), Example.Hello
                         .newBuilder()
                         .setMessag("hello")
@@ -124,37 +125,98 @@ public class Main {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                logger.debug(httpAwsomeSearch.search(new DummyRpcController(), Example.Hello
-                        .newBuilder()
-                        .setMessag("hello")
-                        .build()).getAnswer());
-                logger.debug(socketAwsomeSearch.search(new DummyRpcController(), Example.Hello
-                        .newBuilder()
-                        .setMessag("hello")
-                        .build()).getAnswer());
-                logger.debug(httpNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
-                        .newBuilder()
-                        .setOperand1(32)
-                        .setOperand2(54)
-                        .build()).getSerializedSize()+"");
-                logger.debug(socketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
-                        .newBuilder()
-                        .setOperand1(32)
-                        .setOperand2(54)
-                        .build()).getResult()+"");
 
-                logger.debug(reffSocketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
-                        .newBuilder()
-                        .setOperand1(32)
-                        .setOperand2(54)
-                        .build()).getResult()+"");
-                logger.debug(reffHttpAwsomeSearch.search(new DummyRpcController(), Example.Hello
-                        .newBuilder()
-                        .setMessag("hello")
-                        .build()).getAnswer());
-            } catch (ServiceException e) {
-                logger.error("timeout", e);
-            }
+                Executor e = Executors.newFixedThreadPool(20);
+
+                e.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            logger.debug(httpAwsomeSearch.search(new DummyRpcController(), Example.Hello
+                                    .newBuilder()
+                                    .setMessag("hello")
+                                    .build()).getAnswer());
+                        } catch (ServiceException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+
+                e.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            logger.debug(socketAwsomeSearch.search(new DummyRpcController(), Example.Hello
+                                    .newBuilder()
+                                    .setMessag("hello")
+                                    .build()).getAnswer());
+                        } catch (ServiceException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+
+                e.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            logger.debug(httpNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                                    .newBuilder()
+                                    .setOperand1(32)
+                                    .setOperand2(54)
+                                    .build()).getSerializedSize()+"");
+                        } catch (ServiceException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+
+
+                e.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            logger.debug(socketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                                    .newBuilder()
+                                    .setOperand1(32)
+                                    .setOperand2(54)
+                                    .build()).getResult()+"");
+                        } catch (ServiceException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+
+
+                e.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            logger.debug(reffSocketNewUsefullService.doGoodJob(new DummyRpcController(), Example.In
+                                    .newBuilder()
+                                    .setOperand1(32)
+                                    .setOperand2(54)
+                                    .build()).getResult()+"");
+                        } catch (ServiceException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+
+
+                e.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            logger.debug(reffHttpAwsomeSearch.search(new DummyRpcController(), Example.Hello
+                                    .newBuilder()
+                                    .setMessag("hello")
+                                    .build()).getAnswer());
+                        } catch (ServiceException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
         }
     }
 }

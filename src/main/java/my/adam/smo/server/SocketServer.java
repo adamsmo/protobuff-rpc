@@ -130,10 +130,10 @@ public class SocketServer extends Server {
                                 }
 
                                 e.getChannel().write(response);
-                                logger.debug("finishing call, response sent");
+                                logger.trace("finishing call, response sent");
                             }
                         };
-                        logger.debug("calling " + methodToCall.getFullName());
+                        logger.trace("calling " + methodToCall.getFullName());
                         service.callMethod(methodToCall, dummyController, methodArguments, callback);
                         stopWatch.stop();
                         logger.trace(stopWatch.shortSummary());

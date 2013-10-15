@@ -152,7 +152,7 @@ public class HTTPServer extends Server {
                                     response.writeTo(codedOutputStream);
                                     codedOutputStream.flush();
                                 } catch (IOException e1) {
-                                    logger.debug("unable to write to output stream", e1);
+                                    logger.error("unable to write to output stream", e1);
                                 }
 
                                 byte[] arr = outputStream.toByteArray();
@@ -164,10 +164,10 @@ public class HTTPServer extends Server {
                                 httpResponse.addHeader(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
 
                                 e.getChannel().write(httpResponse);
-                                logger.debug("finishing call, httpResponse sent");
+                                logger.trace("finishing call, httpResponse sent");
                             }
                         };
-                        logger.debug("calling " + methodToCall.getFullName());
+                        logger.trace("calling " + methodToCall.getFullName());
                         service.callMethod(methodToCall, dummyController, methodArguments, callback);
                         stopWatch.stop();
                         logger.trace(stopWatch.shortSummary());
