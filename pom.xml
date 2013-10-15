@@ -59,7 +59,7 @@
                 </executions>
             </plugin>
             <plugin>
-                <!-- Pobrać i zainstalować z -->
+                <!-- Download and install from -->
                 <!--https://github.com/dtrott/maven-protoc-plugin-->
                 <groupId>com.google.protobuf.tools</groupId>
                 <artifactId>maven-protoc-plugin</artifactId>
