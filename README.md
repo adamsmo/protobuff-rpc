@@ -138,6 +138,15 @@ Logging framework
 In this project i used slf4j with Logback as pluged implementation, if you wont to use difrent logging implementation
 just exclude logback jars from project and add your own implementation.
 
+Credits
+-------
+This project is using
+* [spring](http://spring.io/)
+* [bouncycastle](http://www.bouncycastle.org/)
+* [logback](http://logback.qos.ch/)
+* [netty](http://netty.io/)
+* [protocol buffers](https://developers.google.com/protocol-buffers/docs/overview)
+
 License
 -------
 The MIT License
