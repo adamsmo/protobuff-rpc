@@ -132,8 +132,8 @@ string ready to copy past to configuration.
 * Netty trafic logging configuration:
   + `enable_traffic_logging=false`
 
-Logging
--------
+Logging framework
+-----------------
 
 In this project i used slf4j with Logback as pluged implementation, if you wont to use difrent logging implementation
 just exclude logback jars from project and add your own implementation.
