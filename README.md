@@ -50,7 +50,7 @@ string ready to copy past to configuration.
   + `pub=`
 
 * Netty trafic logging configuration:
-  +`enable_traffic_logging=false`
+  + `enable_traffic_logging=false`
 
 Logging
 -------
