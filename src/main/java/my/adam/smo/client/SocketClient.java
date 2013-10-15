@@ -11,6 +11,8 @@ import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
+import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -65,6 +67,7 @@ public class SocketClient extends Client {
                 ChannelPipeline p = Channels.pipeline();
 
                 if (enableTrafficLogging) {
+                    InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
                     p.addLast("logger", new LoggingHandler(InternalLogLevel.DEBUG));
                 }
 

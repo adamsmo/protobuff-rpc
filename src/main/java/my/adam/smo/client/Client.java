@@ -83,6 +83,8 @@ public abstract class Client extends AbstractCommunicator {
                     callbackLatch.await(blocking_method_call_timeout, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     getLogger().error("call failed", e);
+                    stopWatch.stop();
+                    return null;
                 }
 
                 stopWatch.stop();

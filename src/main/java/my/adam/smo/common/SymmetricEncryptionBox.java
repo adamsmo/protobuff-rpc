@@ -3,14 +3,12 @@ package my.adam.smo.common;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.engines.AESFastEngine;
-import org.bouncycastle.crypto.generators.OpenSSLPBEParametersGenerator;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.ISO7816d4Padding;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
-import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -56,6 +54,8 @@ public class SymmetricEncryptionBox {
     @Value("${cipher_key: }")
     private String key;
 
+    private byte[] aesKey;
+
     @InjectLogger
     private Logger logger;
 
@@ -63,15 +63,24 @@ public class SymmetricEncryptionBox {
     public void init() throws NoSuchAlgorithmException {
         secureRandom = new SecureRandom(key.getBytes());
 
-        OpenSSLPBEParametersGenerator gen = new OpenSSLPBEParametersGenerator();
-        gen.init(key.getBytes(), Base64.decode(key));
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            aesKey = md.digest(key.getBytes());
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("error while getting digest algorithm", e);
+        }
+
     }
 
     public byte[] encrypt(byte[] plainText) {
-        return encrypt(plainText, key.getBytes());
+        return encrypt(plainText, aesKey);
     }
 
     public byte[] encrypt(byte[] plainText, byte[] key) {
+        if (key.length != 32) {
+            throw new IllegalArgumentException("key have to be 32 bytes long (256 bits)");
+        }
+
         byte[] seed = new byte[seedLength];
         secureRandom.nextBytes(seed);
         byte[] seededPlainText = addSeedToMessage(plainText, seed);
@@ -81,14 +90,8 @@ public class SymmetricEncryptionBox {
         byte[] iv = new byte[ivLength];
         secureRandom.nextBytes(iv);
 
-        MessageDigest md = null;
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("error while getting digest algorithm", e);
-        }
 
-        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key)), iv);
+        CipherParameters cp = new ParametersWithIV(new KeyParameter(key), iv);
 
         PaddedBufferedBlockCipher encCipher;
         encCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(
@@ -101,20 +104,17 @@ public class SymmetricEncryptionBox {
     }
 
     public byte[] decrypt(byte[] cryptogram) {
-        return decrypt(cryptogram, key.getBytes());
+        return decrypt(cryptogram, aesKey);
     }
 
     public byte[] decrypt(byte[] cryptogram, byte[] key) {
-        byte[] out = Arrays.copyOfRange(cryptogram, ivLength, cryptogram.length);
-
-        MessageDigest md = null;
-        try {
-            md = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("error while getting digest algorithm", e);
+        if (key.length != 32) {
+            throw new IllegalArgumentException("key have to be 16 bytes long (32 bits)");
         }
 
-        CipherParameters cp = new ParametersWithIV(new KeyParameter(md.digest(key)), getIV(cryptogram));
+        byte[] out = Arrays.copyOfRange(cryptogram, ivLength, cryptogram.length);
+
+        CipherParameters cp = new ParametersWithIV(new KeyParameter(key), getIV(cryptogram));
 
         PaddedBufferedBlockCipher descCipher;
         descCipher = new PaddedBufferedBlockCipher(new CBCBlockCipher(

@@ -91,7 +91,7 @@ public abstract class AbstractCommunicator {
     }
 
     public RPCommunication.Response getAsymEncryptedResponse(RPCommunication.Response response) {
-        byte[] aesKey = new byte[16];
+        byte[] aesKey = new byte[32];
         secureRandom.nextBytes(aesKey);
         byte[] plainTextResponse = response.getResponse().toByteArray();
         ByteString encryptedResponse = ByteString
@@ -116,7 +116,7 @@ public abstract class AbstractCommunicator {
     }
 
     public RPCommunication.Request getAsymEncryptedRequest(RPCommunication.Request request) {
-        byte[] aesKey = new byte[16];
+        byte[] aesKey = new byte[32];
         secureRandom.nextBytes(aesKey);
         byte[] plainTextRequest = request.getMethodArgument().toByteArray();
         ByteString encryptedRequest = ByteString
