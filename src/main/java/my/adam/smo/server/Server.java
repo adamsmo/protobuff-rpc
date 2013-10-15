@@ -4,9 +4,14 @@ import com.google.protobuf.Service;
 import my.adam.smo.common.AbstractCommunicator;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelException;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.slf4j.Logger;
 
+import javax.crypto.BadPaddingException;
+import java.net.ConnectException;
 import java.net.SocketAddress;
+import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -57,6 +62,25 @@ public abstract class Server extends AbstractCommunicator {
         getLogger().trace("service " + service.getClass().toString()
                 + " registered with name " + service.getDescriptorForType().getFullName());
         return this;
+    }
+
+    /**
+     * @param e
+     * @return true if exception was handled, false otherwise
+     */
+    public boolean standardExceptionHandling(ChannelHandlerContext ctx, ExceptionEvent e) {
+        if (e.getCause() instanceof ClosedChannelException
+                || e.getCause() instanceof ConnectException) {
+            getLogger().error("Client which made request is down", e.getCause());
+            return true;
+        } else if (e.getCause() instanceof IllegalStateException
+                && e.getCause().getCause() instanceof BadPaddingException) {
+            getLogger().error("Client which made request (from "
+                    + ctx.getChannel().getRemoteAddress()
+                    + ") probably has wrong encryption config", e.getCause());
+            return true;
+        }
+        return false;
     }
 
     public abstract Logger getLogger();

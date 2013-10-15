@@ -107,6 +107,13 @@ public class HTTPClient extends Client {
                         stopWatch.stop();
                         logger.trace(stopWatch.shortSummary());
                     }
+
+                    @Override
+                    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+                        if (!standardExceptionHandling(ctx, e)) {
+                            super.exceptionCaught(ctx, e);
+                        }
+                    }
                 });
 
                 stopWatch.stop();

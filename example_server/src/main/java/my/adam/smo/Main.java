@@ -34,9 +34,14 @@ import java.net.InetSocketAddress;
  */
 public class Main {
     public static void main(String args[]){
-        ApplicationContext ac = new ClassPathXmlApplicationContext("Context.xml");
-        HTTPServer httpServer = ac.getBean(HTTPServer.class);
-        SocketServer socketServer = ac.getBean(SocketServer.class);
+        HTTPServer httpServer = Refero.getHttpServer();
+        SocketServer socketServer = Refero.getSocketServer();
+
+        httpServer.register(Example.AwsomeSearch.newReflectiveService(new AwesomeSearchService()));
+        httpServer.register(Example.NewUsefullService.newReflectiveService(new NewUsefullService()));
+
+        socketServer.register(Example.AwsomeSearch.newReflectiveService(new AwesomeSearchService()));
+        socketServer.register(Example.NewUsefullService.newReflectiveService(new NewUsefullService()));
 
         httpServer.start(new InetSocketAddress(8080));
         socketServer.start(new InetSocketAddress(8090));

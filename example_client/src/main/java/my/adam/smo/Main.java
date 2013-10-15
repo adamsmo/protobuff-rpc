@@ -42,9 +42,8 @@ public class Main {
     private static Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String args[]) {
-        ApplicationContext ac = new ClassPathXmlApplicationContext("Context.xml");
-        HTTPClient httpClient = ac.getBean(HTTPClient.class);
-        SocketClient socketClient = ac.getBean(SocketClient.class);
+        HTTPClient httpClient = Refero.getHttpClient();
+        SocketClient socketClient = Refero.getSocketClient();
 
         BlockingRpcChannel httpBChannel = httpClient.blockingConnect(new InetSocketAddress(8080));
         BlockingRpcChannel socketBChannel = socketClient.blockingConnect(new InetSocketAddress(8090));

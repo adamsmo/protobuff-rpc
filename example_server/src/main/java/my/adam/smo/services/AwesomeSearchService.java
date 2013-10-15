@@ -31,12 +31,7 @@ import org.springframework.stereotype.Component;
  * THE SOFTWARE.
  */
 @Component
-public class AwesomeSearchService extends AbstractServiceImpl implements Example.AwsomeSearch.Interface {
-    @Override
-    public Service getService() {
-        return Example.AwsomeSearch.newReflectiveService(this);
-    }
-
+public class AwesomeSearchService implements Example.AwsomeSearch.Interface {
     @Override
     public void search(RpcController controller, Example.Hello request, RpcCallback<Example.AwsomeAnswer> done) {
         done.run(Example.AwsomeAnswer

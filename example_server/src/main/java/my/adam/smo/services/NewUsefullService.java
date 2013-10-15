@@ -31,12 +31,7 @@ import org.springframework.stereotype.Component;
  * THE SOFTWARE.
  */
 @Component
-public class NewUsefullService extends AbstractServiceImpl implements Example.NewUsefullService.Interface {
-    @Override
-    public Service getService() {
-        return Example.NewUsefullService.newReflectiveService(this);
-    }
-
+public class NewUsefullService implements Example.NewUsefullService.Interface {
     @Override
     public void doGoodJob(RpcController controller, Example.In request, RpcCallback<Example.Out> done) {
         done.run(Example.Out.newBuilder().setResult(request.getOperand1()+request.getOperand2()).build());

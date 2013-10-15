@@ -161,6 +161,7 @@ public class HTTPServer extends Server {
 
                                 httpResponse.setContent(resp);
                                 httpResponse.addHeader(HttpHeaders.Names.CONTENT_LENGTH, resp.readableBytes());
+                                httpResponse.addHeader(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
 
                                 e.getChannel().write(httpResponse);
                                 logger.debug("finishing call, httpResponse sent");
@@ -170,6 +171,13 @@ public class HTTPServer extends Server {
                         service.callMethod(methodToCall, dummyController, methodArguments, callback);
                         stopWatch.stop();
                         logger.trace(stopWatch.shortSummary());
+                    }
+
+                    @Override
+                    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+                        if (!standardExceptionHandling(ctx, e)) {
+                            super.exceptionCaught(ctx, e);
+                        }
                     }
                 });
                 return p;

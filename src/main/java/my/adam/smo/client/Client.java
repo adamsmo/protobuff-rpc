@@ -3,11 +3,15 @@ package my.adam.smo.client;
 import com.google.protobuf.*;
 import my.adam.smo.common.AbstractCommunicator;
 import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StopWatch;
 
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +94,15 @@ public abstract class Client extends AbstractCommunicator {
     public void disconnect() {
         bootstrap.shutdown();
         bootstrap.releaseExternalResources();
+    }
+
+    public boolean standardExceptionHandling(ChannelHandlerContext ctx, ExceptionEvent e) {
+        if (e.getCause() instanceof ClosedChannelException
+                || e.getCause() instanceof ConnectException) {
+            getLogger().error("Server is down ", e.getCause());
+            return true;
+        }
+        return false;
     }
 
     public abstract RpcChannel connect(final InetSocketAddress sa);

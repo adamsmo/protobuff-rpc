@@ -17,9 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
 import javax.inject.Inject;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.Executors;
 
 /**
@@ -108,10 +106,7 @@ public class SocketClient extends Client {
 
                     @Override
                     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-                        if (e.getCause() instanceof ClosedChannelException
-                                || e.getCause() instanceof ConnectException) {
-                            logger.error("Server is down ", e.getCause());
-                        } else {
+                        if (!standardExceptionHandling(ctx, e)) {
                             super.exceptionCaught(ctx, e);
                         }
                     }
