@@ -26,15 +26,15 @@ Config
 For server/client configuration add to classpath of your application file named `refero.properties`.
 
 * Client server threads count:
-  + `server_worker_threads` default = `false`
-  + `client_worker_threads` default = `false`
+  + `server_worker_threads` default = `10`
+  + `client_worker_threads` default = `10`
 
-* If trying to reconnect after server went down, and intervals between reconection atempts:
+* If trying to reconnect after server went down, and intervals between reconection atempts for socket version of rpc:
   + `reconnect` default = `false`
-  + `reconnect_delay` default = `false`
+  + `reconnect_delay` default = `100`
 
 * Timeout to wait for blocking call to finish:
-  + `blocking_method_call_timeout` default = `false`
+  + `blocking_method_call_timeout` default = `100`
 
 * AES configuration, `cipher_key` is specified as plain text password from which is deriverd 256 bits AES key by performing SHA256 on it:
   + `enable_symmetric_encryption` default = `false`
