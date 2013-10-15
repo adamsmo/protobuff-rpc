@@ -1,9 +1,6 @@
 refero-rpc
 ==========
 
-This project contains strong cryptography which is illegal in some countries (AES 256, RSA with 2048 bit key), 
-you are using this software on your own responsibility.
-
 Aim of this project is to learn how to use protocol buffer with netty as RPC. 
 Concept is that netty is transport layer and protobuffs are used as serializer/deserializer of messages passed through netty.
 Protocol buffers also provides way to call method from service by passing method descriptor obtained from protocol buffers.
@@ -137,6 +134,21 @@ Logging framework
 
 In this project i used slf4j with Logback as pluged implementation, if you wont to use difrent logging implementation
 just exclude logback jars from project and add your own implementation.
+
+Credits
+-------
+This project is using
+* [spring](http://spring.io/)
+* [bouncycastle](http://www.bouncycastle.org/)
+* [logback](http://logback.qos.ch/)
+* [netty](http://netty.io/)
+* [protocol buffers](https://developers.google.com/protocol-buffers/docs/overview)
+
+Legal
+-----
+
+This project contains strong cryptography which is illegal in some countries (AES 256, RSA with 2048 bit key), 
+you are using this software on your own responsibility.
 
 License
 -------
