@@ -47,7 +47,7 @@ public abstract class Client extends AbstractCommunicator {
 
     @Value("${reconnect:false}")
     protected boolean reconnect;
-    @Value("${reconnect_delay:1000}")
+    @Value("${reconnect_delay:100}")
     protected int reconnect_delay;
 
     @Value("${blocking_method_call_timeout:100}")
