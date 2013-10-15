@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StopWatch;
 
+import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
@@ -97,7 +98,8 @@ public abstract class Client extends AbstractCommunicator {
     }
 
     public boolean standardExceptionHandling(ChannelHandlerContext ctx, ExceptionEvent e) {
-        if (e.getCause() instanceof ClosedChannelException
+        if (e.getCause() instanceof IOException
+                || e.getCause() instanceof ClosedChannelException
                 || e.getCause() instanceof ConnectException) {
             getLogger().error("Server is down ", e.getCause());
             return true;

@@ -140,7 +140,7 @@ public class SocketClient extends Client {
                     c.unbind().awaitUninterruptibly();
                     c = bootstrap.connect(sa).awaitUninterruptibly().getChannel();
                     try {
-                        Thread.sleep(reconnect_delay);
+                        Thread.sleep(reconnect_delay * 1000);
                     } catch (InterruptedException e) {
                         logger.error("error while sleeping", e);
                     }
