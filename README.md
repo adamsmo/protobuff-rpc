@@ -23,31 +23,32 @@ Folders example_* contains example usage of RPC.
 Config
 ------
 
-For server/client configuration add to classpath of your application file named `refero.properties`.
+For server/client configuration add to classpath of your application file named `refero.properties`, specified values are defaults.
+String are passed without quotation marks.
 
 * Client server threads count:
-  + `server_worker_threads` default = `10`
-  + `client_worker_threads` default = `10`
+  + `server_worker_threads=10`
+  + `client_worker_threads=10`
 
 * If trying to reconnect after server went down, and intervals between reconection atempts for socket version of rpc:
-  + `reconnect` default = `false`
-  + `reconnect_delay` default = `100`
+  + `reconnect=false`
+  + `reconnect_delay=100`
 
 * Timeout to wait for blocking call to finish:
-  + `blocking_method_call_timeout` default = `100`
+  + `blocking_method_call_timeout=100`
 
 * AES configuration, `cipher_key` is specified as plain text password from which is deriverd 256 bits AES key by performing SHA256 on it:
-  + `enable_symmetric_encryption` default = `false`
-  + `cipher_key`
+  + `enable_symmetric_encryption=false`
+  + `cipher_key=`
 
 * RSA configuration, `prv` is private RSA key stored with `PKCS8EncodedKeySpec` and Base64 encoded,
 `pub` is public RSA key stored with `X509EncodedKeySpec` and Base64 encoded. Default values results in encryption errors!:
-  + `enable_asymmetric_encryption` default = `false`
-  + `prv`
-  + `pub`
+  + `enable_asymmetric_encryption=false`
+  + `prv=`
+  + `pub=`
 
 * Netty trafic logging configuration:
-  +`enable_traffic_logging` default = `false`
+  +`enable_traffic_logging=false`
 
 Logging
 -------
