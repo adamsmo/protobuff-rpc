@@ -51,7 +51,7 @@ public class HTTPClient extends Client {
     private Logger logger;
 
     @Inject
-    public HTTPClient(@Value("${client_worker_threads}") int workerThreads) {
+    public HTTPClient(@Value("${client_worker_threads:10}") int workerThreads) {
         bootstrap.setFactory(new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool(), workerThreads));

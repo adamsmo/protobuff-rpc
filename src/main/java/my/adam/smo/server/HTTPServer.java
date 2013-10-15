@@ -53,7 +53,7 @@ public class HTTPServer extends Server {
     private Logger logger;
 
     @Inject
-    public HTTPServer(@Value("${server_worker_threads}") int workerCount) {
+    public HTTPServer(@Value("${server_worker_threads:10}") int workerCount) {
         bootstrap.setFactory(new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool(),

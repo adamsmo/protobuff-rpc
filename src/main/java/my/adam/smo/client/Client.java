@@ -40,12 +40,12 @@ public abstract class Client extends AbstractCommunicator {
     protected final ClientBootstrap bootstrap = new ClientBootstrap();
     protected final AtomicLong seqNum = new AtomicLong(0);
 
-    @Value("${reconnect}")
+    @Value("${reconnect:false}")
     protected boolean reconnect;
-    @Value("${reconnect_delay}")
+    @Value("${reconnect_delay:1000}")
     protected int reconnect_delay;
 
-    @Value("${blocking_method_call_timeout}")
+    @Value("${blocking_method_call_timeout:100}")
     protected int blocking_method_call_timeout;
 
     protected ConcurrentHashMap<Long, RpcCallback<Message>> callbackMap = new ConcurrentHashMap<Long, RpcCallback<Message>>();

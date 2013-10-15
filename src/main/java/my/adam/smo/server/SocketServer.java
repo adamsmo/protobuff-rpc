@@ -49,7 +49,7 @@ public class SocketServer extends Server {
     private Logger logger;
 
     @Inject
-    public SocketServer(@Value("${server_worker_threads}") int workerCount) {
+    public SocketServer(@Value("${server_worker_threads:10}") int workerCount) {
         bootstrap.setFactory(new NioServerSocketChannelFactory(
                 Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool(),
