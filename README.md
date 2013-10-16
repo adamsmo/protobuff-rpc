@@ -13,7 +13,8 @@ Setup
 -----
 
 For compiling from sources you have to install [maven-protoc-plugin](https://github.com/dtrott/maven-protoc-plugin) 
-and protocol buffers compiler and configure path to it in pom.xml of project.
+and [protocol buffers compiler](https://developers.google.com/protocol-buffers/) and configure `project.protoc.bin` to 
+protoc location it in `pom.xml` of project.
 
 Required files for starting server with default logging framework (logback) and encryption are:
 * `refero.properties`
