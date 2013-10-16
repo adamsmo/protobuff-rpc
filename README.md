@@ -12,8 +12,8 @@ For non spring applications threre is Refero class, with srtatic factory methode
 Setup
 -----
 
-Install protocol buffers compiler and configure path to it in pom.xml of example projects if you want to run them.
-Install maven-protoc-plugin from https://github.com/dtrott/maven-protoc-plugin
+For compiling from sources you have to install [maven-protoc-plugin](https://github.com/dtrott/maven-protoc-plugin) 
+and protocol buffers compiler and configure path to it in pom.xml of project.
 
 Required files for starting server with default logging framework (logback) and encryption are:
 * `refero.properties`
