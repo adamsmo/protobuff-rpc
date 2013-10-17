@@ -81,15 +81,20 @@ public abstract class Client extends AbstractCommunicator {
 
                 rpc.callMethod(method, controller, request, responsePrototype, done);
                 try {
+                    //TODO czeka a po timeoucie nie rzuca wyjątku!!!
                     callbackLatch.await(blocking_method_call_timeout, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     getLogger().error("call failed", e);
                     stopWatch.stop();
-                    return null;
                 }
 
                 stopWatch.stop();
                 getLogger().trace(stopWatch.shortSummary());
+
+                if (result.get() == null) {
+                    throw new ServiceException("blocking method timeout");
+                }
+
                 return result.get();
             }
         };
