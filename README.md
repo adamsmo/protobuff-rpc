@@ -1,24 +1,20 @@
 refero-rpc
 ==========
 
-Aim of this project is to learn how to use protocol buffer with netty as RPC. 
-Concept is that netty is transport layer and protobuffs are used as serializer/deserializer of messages passed through netty.
-Protocol buffers also provides way to call method from service by passing method descriptor obtained from protocol buffers.
-Buffers also provides client side service stubs that generates that descriptors.
+Rpc can be testedwith example projects.
 
-Another nice feature of using Protocol Buffers is that it provides blocking as well as non blocking way of calling methods.
-Combined that with netty NIO (non blocking I/O) channels results in very scalable RPC solution.
+I put all components in separate packages that it is easily recognizable what class belongs to what.
 
-I was trying to put all components in separate packages that it is easily recognizable what class belongs to what.
+Everything internaly is connected with spring annotation which makes it ready to use with spring based applications as pluggable components.
 
-Everything is connected with spring context and annotation based configuration, which makes it ready to use with spring based applications as pluggable components.
-
-For non spring applications threre is class Refero with srtatic factory methodes that can be used to create server and client side endpoints.
-
-Folders example_* contains example usage of RPC.
+For non spring applications threre is Refero class, with srtatic factory methodes that can be used to create server and client side endpoints.
 
 Setup
 -----
+
+For compiling from sources you have to install [maven-protoc-plugin](https://github.com/dtrott/maven-protoc-plugin) 
+and [protocol buffers compiler](https://developers.google.com/protocol-buffers/) and configure `project.protoc.bin` to 
+protoc location it in `pom.xml` of project.
 
 Required files for starting server with default logging framework (logback) and encryption are:
 * `refero.properties`
@@ -143,6 +139,7 @@ This project is using
 * [logback](http://logback.qos.ch/)
 * [netty](http://netty.io/)
 * [protocol buffers](https://developers.google.com/protocol-buffers/docs/overview)
+* [maven-protoc-plugin](https://github.com/dtrott/maven-protoc-plugin)
 
 Legal
 -----
