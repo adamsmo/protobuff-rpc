@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The MIT License
@@ -59,8 +60,6 @@ public abstract class Client extends AbstractCommunicator {
     public BlockingRpcChannel blockingConnect(final InetSocketAddress sa) {
         return new BlockingRpcChannel() {
             private int countDownCallTimesToRelease = 1;
-
-            private Message result;
             private RpcChannel rpc = connect(sa);
 
             @Override
@@ -70,10 +69,12 @@ public abstract class Client extends AbstractCommunicator {
 
                 final CountDownLatch callbackLatch = new CountDownLatch(countDownCallTimesToRelease);
 
+                final AtomicReference<Message> result = new AtomicReference<Message>();
+
                 RpcCallback<Message> done = new RpcCallback<Message>() {
                     @Override
                     public void run(Message parameter) {
-                        result = parameter;
+                        result.set(parameter);
                         callbackLatch.countDown();
                     }
                 };
@@ -89,7 +90,7 @@ public abstract class Client extends AbstractCommunicator {
 
                 stopWatch.stop();
                 getLogger().trace(stopWatch.shortSummary());
-                return result;
+                return result.get();
             }
         };
     }
